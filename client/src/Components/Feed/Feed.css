@@ -1,0 +1,110 @@
+.main-container {
+  display: flex;
+  padding-top: 60px; /* space for fixed top navbar */
+  height: 100vh;
+  /* margin-left: 20vw; */
+  gap: 50px;
+  overflow: hidden; /* prevent global scroll */
+}
+
+.feed-section {
+  flex: 2;
+  overflow-y: auto;
+  margin-left: 20vw;
+
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.suggestions-section {
+  flex: 1;
+  /* margin-left: 150px; */
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  border-left: 1px solid #eee;
+}
+
+/* Each post */
+.post {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.feed-section::-webkit-scrollbar {
+  display: none;
+}
+
+/* Suggestions UI */
+.suggestion-card {
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: box-shadow 0.2s ease;
+  background-color: #fafafa;
+}
+
+.suggestion-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.suggestion-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.suggestion-card .username {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.suggestion-card button {
+  margin-left: auto;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.suggestion-card button:hover {
+  background-color: #0056b3;
+}
+
+.main-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 20px;
+}
+
+.feed-section {
+  flex: 2;
+}
+
+.suggestions-section {
+  flex: 1;
+  max-width: 300px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  height: fit-content;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}

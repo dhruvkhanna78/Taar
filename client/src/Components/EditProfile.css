@@ -1,0 +1,80 @@
+/* EditProfile.css */
+
+.edit-profile-container {
+  max-width: 450px;
+  margin: 40px auto;
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #262626;
+}
+
+.edit-profile-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.error-text {
+  color: #ed4956;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.edit-profile-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.edit-profile-form input[type="text"],
+.edit-profile-form textarea {
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+  outline-offset: 2px;
+  outline-color: #0095f6;
+}
+
+.edit-profile-form input[type="file"] {
+  margin-bottom: 20px;
+}
+
+.profile-image-preview {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  border: 2px solid #0095f6;
+}
+
+.edit-profile-form button {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #0095f6;
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-profile-form button:hover:not(:disabled) {
+  background-color: #0077cc;
+}
+
+.edit-profile-form button:disabled {
+  background-color: #99c7f8;
+  cursor: not-allowed;
+}

@@ -1,0 +1,38 @@
+.create-post-container {
+  padding: 20px;
+  max-width: 400px;
+  margin: 100px auto 20px; /* push below navbar */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.create-post-form input[type="text"],
+.create-post-form input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.create-post-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.create-post-form button:hover {
+  background-color: #0056b3;
+}
+
+.status-message {
+  margin-top: 10px;
+  color: green;
+  font-weight: bold;
+  text-align: center;
+}

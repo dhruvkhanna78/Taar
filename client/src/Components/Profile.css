@@ -1,0 +1,145 @@
+/* Profile Page Container - alag rakho */
+.profile-page-container {
+  padding: 100px 20px 40px;
+  max-width: 900px; /* bada kiya profile ke liye */
+  margin: 0 auto;
+}
+
+/* Profile Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.profile-image {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.profile-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-details h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 32px;
+  font-size: 16px;
+}
+
+.loading-text,
+.error-text {
+  text-align: center;
+  margin-top: 100px;
+  font-size: 18px;
+  color: gray;
+}
+
+/* Posts grid on profile page */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 12px;
+  max-width: 600px;
+  margin: 40px auto 0;
+}
+
+.post-card {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* square aspect ratio */
+  border: 1px solid rgba(0, 0, 0, 0.08); /* light border for distinction */
+  border-radius: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.post-card img {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.post-card img:hover {
+  transform: scale(1.05);
+}
+
+/* Hide captions on profile posts */
+.post-caption {
+  display: none;
+}
+
+/* Home page container */
+.feed-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Profile picture for profile page (badi) */
+.profile-image-profilePage {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+/* Profile picture for home/feed page (chhoti) */
+.profile-image-homePage {
+  width: 40px; /* thoda aur chhota kiya */
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1.5px solid #ccc;
+}
+
+.follow-button {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px;
+  border: 1.5px solid #0095f6;
+  background-color: #0095f6;
+  color: white;
+  cursor: pointer;
+  margin-left: 12px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.follow-button:hover:not(:disabled) {
+  background-color: #0077cc;
+  border-color: #0077cc;
+}
+
+.follow-button.unfollow {
+  background-color: white;
+  color: #262626;
+  border-color: #ccc;
+}
+
+.follow-button.unfollow:hover:not(:disabled) {
+  background-color: #eee;
+  border-color: #aaa;
+}
+
+.follow-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
