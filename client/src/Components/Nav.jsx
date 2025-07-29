@@ -84,8 +84,8 @@ const Nav = () => {
                     <div className="icon-wrapper" onClick={toggleSidebar}>
                         <i className="fi fi-rr-menu-burger"></i>
                     </div>
-                    <div className="icon-wrapper">
-                        <i className="fi fi-brands-instagram"></i>
+                    <div className="taar-logo">
+                        Taar
                     </div>
                 </div>
                 <div className="topright icon-wrapper">

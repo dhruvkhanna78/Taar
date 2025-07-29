@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 /* Sidebar */
 .sidebar {
   position: fixed;
@@ -112,4 +113,13 @@
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
+}
+
+
+.taar-logo {
+    font-family: 'Pacifico', cursive;
+    font-size: 24px;
+    font-weight: bold;
+    color: #000; /* or your theme color */
+    padding-left: 8px;
 }
