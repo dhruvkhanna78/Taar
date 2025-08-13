@@ -1,0 +1,15 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-dark {
+  background-color: #0f0f0f !important;
+  color: #ffffff !important;
+  min-height: 100vh; /* Pure page ka height */
+}
+
+.theme-dark * {
+  border-color: #272727 !important;
+}

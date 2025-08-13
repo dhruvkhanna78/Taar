@@ -28,6 +28,10 @@ const CommentDialog = ({ open, setOpen }) => {
     // Aur comments add kar sakte ho...
   ];
 
+  const sendMessageHandler = async() => {
+    alert(text);
+  }
+
   // Disable body scroll when modal is open
   useEffect(() => {
     if (open) {

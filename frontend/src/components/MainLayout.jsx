@@ -7,9 +7,6 @@ const MainLayout = () => {
         <div>
             <div>
                 <SideNavBar />
-                <div>
-                    <Outlet />
-                </div>
             </div>
         </div>
     )
