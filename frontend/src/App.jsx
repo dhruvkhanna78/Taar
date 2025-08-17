@@ -37,7 +37,7 @@ const LayoutWithModal = () => {
 const browserRouter = createBrowserRouter([
   {
     path: "/",
-    element: <LayoutWithModal />,
+    element: <MainLayout />,
     children: [
       { index: true, element: <Home /> },
       { path: "profile", element: <Profile /> },

@@ -1,4 +1,6 @@
+// CreatePost.jsx
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 
 const categoryTagsMap = {
   Entertainment: ["Memes", "Personal"],
@@ -16,12 +18,8 @@ const CreatePost = ({ open, setOpen }) => {
   const [tags, setTags] = useState([]);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-      resetForm();
-    }
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -41,7 +39,7 @@ const CreatePost = ({ open, setOpen }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); // store actual File object for backend
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (event) => setImagePreview(event.target.result);
       reader.readAsDataURL(file);
@@ -53,14 +51,14 @@ const CreatePost = ({ open, setOpen }) => {
       const formData = new FormData();
       formData.append("caption", postText);
       formData.append("category", category);
-      formData.append("tag", tags[0]); // single tag, because backend expects a string
+      formData.append("tag", tags[0] || "");
       formData.append("image", imageFile);
 
-      const response = await fetch("http://localhost:8000/api/v1/post/addpost", {
-  method: "POST",
-  credentials: "include", // 🔹 send cookies
-  body: formData,
-});
+     const response = await fetch("http://localhost:8000/api/v1/post/addpost", {
+      method: "POST",
+      credentials: "include", // ← ye important hai cookie bhejne ke liye
+      body: formData,
+    });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Failed to create post");
@@ -75,10 +73,16 @@ const CreatePost = ({ open, setOpen }) => {
 
   const availableTags = category ? categoryTagsMap[category] : [];
 
-  return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-      <div className="bg-gray-900 rounded-xl max-w-5xl w-full max-h-[85vh] flex overflow-hidden shadow-2xl border border-gray-700">
-        
+  // Use Portal to render modal at root
+  return ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex justify-center items-center bg-black/70 backdrop-blur-sm px-4"
+      onClick={() => setOpen(false)} // close on overlay click
+    >
+      <div
+        className="bg-gray-900 rounded-xl max-w-5xl w-full max-h-[85vh] flex overflow-hidden shadow-2xl border border-gray-700"
+        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+      >
         {/* Left preview */}
         <div className="w-1/2 bg-gray-950 flex items-center justify-center p-4">
           {step === 2 && imagePreview ? (
@@ -90,9 +94,7 @@ const CreatePost = ({ open, setOpen }) => {
           ) : (
             <div className="text-gray-500 text-center px-4">
               {step === 1 ? (
-                <p className="text-lg font-medium">
-                  Select a category to start your post
-                </p>
+                <p className="text-lg font-medium">Select a category to start your post</p>
               ) : (
                 <p className="mb-2 text-sm italic">No image selected</p>
               )}
@@ -102,12 +104,9 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Right input */}
         <div className="w-1/2 flex flex-col bg-gray-900 text-white">
-          
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-800">
-            <h2 className="font-semibold text-xl">
-              {step === 1 ? "Select Category" : "Create Post"}
-            </h2>
+            <h2 className="font-semibold text-xl">{step === 1 ? "Select Category" : "Create Post"}</h2>
             <button
               className="text-gray-400 font-bold text-3xl leading-none hover:text-red-500 transition"
               onClick={() => setOpen(false)}
@@ -118,7 +117,6 @@ const CreatePost = ({ open, setOpen }) => {
           </div>
 
           {step === 1 ? (
-            // Step 1: Category selection
             <div className="grid grid-cols-1 gap-3 px-6 py-6">
               {Object.keys(categoryTagsMap).map((cat) => (
                 <button
@@ -161,7 +159,7 @@ const CreatePost = ({ open, setOpen }) => {
                         type="checkbox"
                         checked={tags.includes(tag)}
                         onChange={(e) => {
-                          if (e.target.checked) setTags([tag]); // only 1 tag allowed
+                          if (e.target.checked) setTags([tag]);
                           else setTags([]);
                         }}
                         className="hidden"
@@ -196,7 +194,8 @@ const CreatePost = ({ open, setOpen }) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
