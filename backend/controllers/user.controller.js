@@ -22,6 +22,13 @@ export const register = async (req, res) => {
         success: false,
       });
     }
+    const validUsername = await User.findOne({ username });
+    if (validUsername) {
+      return res.status(401).json({
+        message: "This username is already in use",
+        success: false,
+      });
+    }
 
     const hashedpassword = await bcrypt.hash(password, 10);
 
