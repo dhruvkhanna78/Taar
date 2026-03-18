@@ -32,8 +32,11 @@ const userSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    otp:{type: String},
+    otpExpiry:{type: Date},
+    isVerified:{type: Boolean, default: false},
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const User = mongoose.model("User", userSchema); //converting the schema into MongoDB model which works as an interface between MongoDB collections and code.

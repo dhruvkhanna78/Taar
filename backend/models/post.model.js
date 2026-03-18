@@ -8,12 +8,13 @@ const postSchema = new mongoose.Schema({
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   category: {
     type: String,
-    enum: ["General", "Learning", "Coding"],
-    required: true,
+    enum: ["","Entertainment", "Learning", "Coding", "Art & Literature", "Gaming", "Sports"],
+    required: false,
   },
   tag: {
     type: String,
     enum: [
+      "",
       "Memes",
       "Personal",
       "Facts",
@@ -25,8 +26,8 @@ const postSchema = new mongoose.Schema({
       "Stories",
       null,
     ],
-    required: true,
+    required: false,
   },
-});
+},{ timestamps: true });
 
 export const Post = mongoose.model("Post", postSchema);

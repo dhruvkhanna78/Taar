@@ -7,6 +7,8 @@ import {
   login,
   logout,
   register,
+  sendOTPController,
+  verifyOtp,
 } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import upload from "../middlewares/multer.js";
@@ -19,5 +21,7 @@ router.route("/:id/profile").get(isAuthenticated, getprofile);
 router.route("/profile/edit").post(isAuthenticated, upload.single("profilePicture"), editProfile);
 router.route("/suggested").get(isAuthenticated, getSuggestedUsers);
 router.route("/followorunfollow/:id").post(isAuthenticated, followOrUnfollow);
+router.route("/send-otp").post(sendOTPController);
+router.route("/verify-otp").post(verifyOtp);
 
 export default router;

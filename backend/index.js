@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 const corsOptions = {
-  origin: "https://localhost:5173",
+  origin: "http://localhost:5173",
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -36,5 +36,5 @@ app.use("/api/v1/message", messageRoute);
 
 app.listen(PORT, () => {
   connectDB();
-  console.log(`Server listen at ${PORT}`);
+  console.log(`Server listen at http://localhost:${PORT}`);
 });

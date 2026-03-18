@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
+import { sendOTPEmail } from "../services/emailServices.js";
 
 //Register function
 export const register = async (req, res) => {
@@ -44,6 +45,10 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({
+      message: "Server error, please try again",
+      success: false
+    });
   }
 };
 
@@ -79,15 +84,15 @@ export const login = async (req, res) => {
     expiresIn: "7d",
     });
 
-    const populatedPosts = await Promise.all(
-      user.posts.map(async (postId)=>{
-        const post = await Post.findById(postId);
-        if(post.author.equals(user._id)){
-          return post;
-        }
-        return null;
-      })
-    );
+    // const populatedPosts = await Promise.all(
+    //   user.posts.map(async (postId)=>{
+    //     const post = await Post.findById(postId);
+    //     if(post.author.equals(user._id)){
+    //       return post;
+    //     }
+    //     return null;
+    //   })
+    // );
 
     // creating user object to store essential data
     user = {
@@ -111,11 +116,123 @@ export const login = async (req, res) => {
       .json({
         message: `Welcome back ${user.username}`,
         success: true,
+        user: user
       });
   } catch (error) {
     console.log(error);
+    // Yeh line add karein varna frontend fasa rahega
+    return res.status(500).json({
+      message: "Server error, please try again",
+      success: false
+    });
   }
 };
+
+//Verification of user
+export const sendOTPController = async (req, res) => {
+  try{
+    const {email} = req.body;
+    if(!email){
+      return res.status(400).json({
+        message: "Email is required",
+        success: false,
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); //generating random 6 digit otp
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); //otp valid for 5 minutes
+
+    let user = await User.findOne({email});
+    if(!user){
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      })
+    }
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    sendOTPEmail(email, otp);
+
+    return res.status(200).json({
+      message: "OTP sent to your email",
+      success: true,
+    });
+
+  } catch(error){
+    return res.status(500).json({
+      message: "Server error, please try again",
+      success: false
+    });
+  }
+}
+
+//OTP verification function
+export const verifyOtp = async(req, res) => {
+  try{
+    const {email, otp} = req.body;
+
+    if(!email){
+      return res.status(400).json({
+        message: "Email is required",
+        success: false,
+      });
+    }
+
+    if(!otp){
+      return res.status(400).json({
+        message: "OTP is required",
+        success: false,
+      });
+    }
+
+    let user = await User.findOne({email});
+
+    if(!user){
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    if(user.otpExpiry < Date.now()){
+      return res.status(400).json({
+        message: "OTP expired",
+        success: false,
+      });
+    }
+
+    if(user.otp !== otp){
+      return res.status(400).json({
+        message: "Invalid OTP",
+        success: false,
+      });
+    }
+
+
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    return res.status(200).json({
+      message: "OTP verified successfully",
+      success: true,
+    });
+
+    
+  } catch(error){
+    console.log(error);
+    return res.status(500).json({
+      message: "Server error, please try again",
+      success: false
+    });
+  }
+
+
+}
 
 //Logout function
 export const logout = async (_, res) => {
@@ -199,6 +316,8 @@ export const getSuggestedUsers = async (req, res) => {
   }
 };
 
+
+//Follow or Unfollow function
 export const followOrUnfollow = async (req, res) => {
   try {
     const followKarneWala = req.id; //our id

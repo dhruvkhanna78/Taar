@@ -8,15 +8,17 @@ export const addNewPost = async (req, res) => {
   try {
     const { caption, category, tag } = req.body;
     const image = req.file;
-    const authorId = req.id;
+    const authorId = req.id; // from isAuthenticated middleware
 
-    if (!image || !category || !tag) {
+    // || !category || !tag add this later
+    if (!image) {
       return res.status(400).json({
         message: "Complete the process!",
+        success: false,
       });
     }
 
-    // Image upload
+    // Image resize and optimize
     const optimizedImageBuffer = await sharp(image.buffer)
       .resize({
         width: 800,
@@ -26,12 +28,15 @@ export const addNewPost = async (req, res) => {
       .toFormat("jpeg", { quality: 80 })
       .toBuffer();
 
-    //   buffer to data uri
-    const fileUri = `data:image/;base64,${optimizedImageBuffer.toString(
+    // Convert buffer to Data URI
+    const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
       "base64"
     )}`;
 
+    // Upload to Cloudinary
     const cloudinaryResponse = await cloudinary.uploader.upload(fileUri);
+
+    // Create post
     const post = await Post.create({
       caption,
       category,
@@ -40,7 +45,7 @@ export const addNewPost = async (req, res) => {
       author: authorId,
     });
 
-    //Adding the post in author's profile
+    // Add post to author's profile
     const user = await User.findById(authorId);
     if (user) {
       user.posts.push(post._id);
@@ -48,25 +53,34 @@ export const addNewPost = async (req, res) => {
     }
 
     await post.populate({ path: "author", select: "-password" });
+
     return res.status(201).json({
       message: "New post added",
       post,
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({
+      message: "Server error",
+      success: false,
+    });
   }
 };
 
 export const getAllPost = async (req, res) => {
   try {
-    const { category } = req.body;
-    const posts = await Post.find({ category })
+    const category = req.query.category; // default
+    const filter = category
+      ? { category: { $regex: new RegExp(`^${category}$`, "i") } }
+      : {};
+
+    const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
-      .populate({ path: "author", select: "username profilePicture" })
+      .populate({ path: "author", select: "username profilePicture" }) // 'owner' ki jagah 'author'
       .populate({
         path: "comments",
-        sort: { createdAt: -1 },
+        options: { sort: { createdAt: -1 } }, // yeh populate ke andar sort ka sahi syntax hai
         populate: { path: "author", select: "username profilePicture" },
       });
 
@@ -75,9 +89,47 @@ export const getAllPost = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in getAllPost:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+
+// export const getAllPost = async (req, res) => {
+//   try {
+//     // Sabse simple query: {} matlab NO FILTER, poora collection fetch karo
+//     const posts = await Post.find({})
+//       .sort({ createdAt: -1 }) // Latest posts pehle
+//       .populate({ 
+//         path: "author", 
+//         select: "username profilePicture" 
+//       })
+//       .populate({
+//         path: "comments",
+//         options: { sort: { createdAt: -1 } },
+//         populate: { 
+//           path: "author", 
+//           select: "username profilePicture" 
+//         },
+//       });
+
+//     // Terminal check ke liye
+//     console.log(`Bhai, DB mein total ${posts.length} posts mili hain.`);
+
+//     return res.status(200).json({
+//       success: true,
+//       posts, // Ye list saare users ki posts contain karegi
+//     });
+//   } catch (error) {
+//     console.error("Error in getAllPost:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 export const getUserPost = async (req, res) => {
   try {
@@ -166,10 +218,12 @@ export const addComment = async (req, res) => {
       text,
       author: commentKarneWalaUserKiId,
       post: postId,
-    }).populate({
+    })
+
+    await comment.populate({
       path: "author",
       select: "username profilePicture",
-    });
+    })
 
     post.comments.push(comment._id);
     await post.save();
