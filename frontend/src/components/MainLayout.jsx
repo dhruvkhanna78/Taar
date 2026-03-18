@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import SideNavBar from './SideNavBar';
+import React from 'react'
+import { Outlet } from 'react-router-dom'
+import LeftSidebar from './LeftSidebar'
 
 const MainLayout = () => {
-  const [selectedCategory, setSelectedCategory] = useState("Entertainment");
-
   return (
-    <div>
-      <SideNavBar 
-        selectedCategory={selectedCategory} 
-        setSelectedCategory={setSelectedCategory} 
-      />
-      <Outlet /> {/* Child pages yahan render honge */}
+    <div className="flex min-h-screen">
+      {/* Left Sidebar */}
+      <div className="w-64 border-r h-screen overflow-y-auto fixed">
+        <LeftSidebar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 ml-64">
+        <Outlet />
+      </div>
     </div>
-  );
+  )
 }
 
-export default MainLayout;
+export default MainLayout

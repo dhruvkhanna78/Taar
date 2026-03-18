@@ -1,138 +1,76 @@
-import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import React from 'react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { AvatarImage } from '@radix-ui/react-avatar'
+import { Link } from 'react-router-dom'
+import { DialogTrigger } from '@radix-ui/react-dialog'
+import { MoreHorizontal } from 'lucide-react'
+import { Button } from './ui/button'
 
 const CommentDialog = ({ open, setOpen }) => {
-  const [commentText, setCommentText] = useState("");
-
-  const comments = [
-    {
-      id: 1,
-      username: "username",
-      text: "comments ayenge",
-      avatar:
-        "https://img.daisyui.com/images/profile/demo/3@94.webp",
-    },
-    {
-      id: 2,
-      username: "anotheruser",
-      text: "Yeh ek aur comment hai, scroll test ke liye.",
-      avatar:
-        "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    {
-      id: 3,
-      username: "user3",
-      text: "Aur bhi comments add kar sakte hain.",
-      avatar:
-        "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    // Aur comments add kar sakte ho...
-  ];
-
-  const sendMessageHandler = async() => {
-    alert(text);
-  }
-
-  // Disable body scroll when modal is open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    const [text, setText] = React.useState("");
+    const changeEventHAndler = (e) => {
+        const inputText = e.target.value;
+        if(inputText.trim()){
+            setText(inputText);
+        } else{
+            setText("");
+        }
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
 
-  // Prevent scroll propagation to parent (photo) when at scroll edges in comments
-  const handleScroll = (e) => {
-    const el = e.currentTarget;
-    const isScrollTop = el.scrollTop === 0;
-    const isScrollBottom = Math.ceil(el.scrollHeight - el.scrollTop) === el.clientHeight;
-
-    if ((isScrollTop && e.deltaY < 0) || (isScrollBottom && e.deltaY > 0)) {
-      e.preventDefault();
+    const sendMessageHandler = async () => {
+        alert("Message sent: " + text);
     }
-  };
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-md flex justify-center items-center z-50">
-      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[80vh] flex overflow-hidden shadow-2xl">
-        
-        {/* Left side image */}
-        <div className="w-1/2 bg-gray-900">
-          <img
-            src="https://imgs.search.brave.com/jipawE3yrZuBWa2fpLhNDx5tiqrUwRjKLhi9HVO5ZFg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9oYXBw/eS13b21hbi1zdW5z/ZXQtbmF0dXJlLWl3/aXRoLW9wZW4taGFu/ZHMtc3VtbWVyLTk1/MDM4NzAzLmpwZw"
-            alt="post"
-            className="object-cover h-full w-full"
-          />
-        </div>
-
-        {/* Right side comments and input */}
-        <div className="w-1/2 flex flex-col bg-gray-800 text-white">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center font-semibold text-white text-lg select-none">
-                CN
-              </div>
-              <span className="font-semibold text-white text-sm tracking-wide">username</span>
-            </div>
-            <button
-              className="text-gray-400 font-bold text-3xl leading-none hover:text-white transition"
-              onClick={() => setOpen(false)}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-          </div>
-
-          {/* Comments list */}
-          <div
-            className="flex-1 overflow-y-auto px-6 py-4 space-y-5 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
-            onWheel={handleScroll}
-          >
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-4 items-start">
-                <img
-                  src={comment.avatar}
-                  alt={comment.username}
-                  className="w-11 h-11 rounded-full object-cover"
-                />
-                <div>
-                  <span className="font-semibold text-white text-sm">{comment.username}</span>
-                  <p className="text-gray-300 text-sm mt-1">{comment.text}</p>
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent className='max-w-none  w-[90vw] p-0 flex flex-col h-auto'>
+                <div className='flex gap-4 pr-2'>
+                    <div className='select-none w-full md:w-1/3 hidden md:block'>
+                        <img src="https://cdn.pixabay.com/photo/2025/08/17/10/46/bird-9779577_1280.png" alt="post_img" className='w-full h-full object-cover rounded-l-lg' />
+                    </div>
+                    <div className='w-full md:w-2/3 flex flex-col justify-between'>
+                        <div className='flex items-center justify-between caret-transparent '>
+                            <div className='flex items-center gap-2 py-4 pl-0'>
+                                <Link>
+                                    <Avatar className='select-none'>
+                                        <AvatarImage src='' alt='post_image' />
+                                        <AvatarFallback>CN</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                                <div>
+                                    <Link className='font-semibold text-xs select-text' >Username</Link>
+                                    {/* <span className='text-gray-600 text-sm'>Bio here...</span> */}
+                                </div>
+                            </div>
+                            <Dialog >
+                                <DialogTrigger asChild className='cursor-pointer item-center flex flex-col text-sm text-center caret-transparent select-none'>
+                                    <MoreHorizontal className='cursor-pointer' />
+                                </DialogTrigger>
+                                <DialogContent className='cursor-pointer w-xs item-center flex flex-col text-sm text-center caret-transparent select-none'>
+                                    <div className='font-bold text-red-500'>
+                                        Unfollow
+                                    </div>
+                                    <div>
+                                        Add to favourites
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                        <hr />
+                        <div className='flex-1 overflow-y-auto h-96 p-4'>
+                            Comments!
+                        </div>
+                        <div className='p-4'>
+                            <div className='flex gap-2 items-center'>
+                                <input type="text" value={text} onChange={changeEventHAndler} placeholder='Add a comment...' className='w-full outline-none border border-gray-300 p-2 rounded'/>
+                                <Button disabled={!text.trim()} onClick={sendMessageHandler} variant='outline'>Send</Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
-          {/* Add comment input */}
-          <div className="p-4 border-t border-gray-700 flex gap-3 bg-gray-800">
-            <input
-              type="text"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
-            <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold transition"
-              disabled={!commentText.trim()}
-              onClick={() => {
-                alert("Comment posted: " + commentText);
-                setCommentText("");
-              }}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default CommentDialog;
+export default CommentDialog

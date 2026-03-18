@@ -1,99 +1,154 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ImageFallback from './ImageFallback';
-import CommentDialog from './CommentDialog';
+import React, { useState } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Bookmark, MessageCircle, MoreHorizontal, Send } from 'lucide-react'
+import { Button } from './ui/button'
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import CommentDialog from './CommentDialog'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
+import axios from 'axios'
+import { setPosts } from '@/redux/postSlice'
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
-  const [open, setOpen] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const menuRef = useRef(null);
+  const [opened, setOpened] = useState(false);
+  const {user} = useSelector(store => store.auth);
+  const {posts} = useSelector(store => store.post);
+  const [liked , setLiked] = useState(post.likes.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post.likes.length || 0);
+  const [comments, setComments] = useState(post.comments || []);
+  const dispatch = useDispatch();
 
-  const changeEventHandler = (e) => setText(e.target.value.trim() ? e.target.value : "");
+  const changeEventHAndler = (e) => {
+    const inputText = e.target.value;
+    if (inputText.trim()) {
+      setText(inputText);
+    } else {
+      setText("");
+    }
+  }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setShowMenu(false);
-    };
-    if (showMenu) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMenu]);
+  const likeOrDislikeHandler = async () => {
+    try{
+      const action = liked ? "dislike" : "like";
+      const res = await axios.get(`http://localhost:8000/api/v1/post/${post._id}/${action}`, {
+        withCredentials: true,
+      });
+      if(res.data.success) {
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes)
+        setLiked(!liked);
+        const updatedPosts = posts.map(p =>  p._id === post._id ? {
+          ...p,
+          likes : liked ? p.likes.filter(id => id !== user._id) : [...p.likes, user._id]
+        } : p);
+        dispatch(setPosts(updatedPosts));
+        toast.success(res.data.message || `Post ${action}d successfully`);
+      }
+    } catch(error){
+      console.log(error);
+    }
+  }
 
-  const handleMenuClick = (option) => {
-    alert(`${option} clicked`);
-    setShowMenu(false);
-  };
+  const commentHandler = async () => {
+    try{
+      const res = await axios.post(`http://localhost:8000/api/v1/post/${post._id}/comment`, {text}, {
+        headers:{
+          'Content-Type': 'application/json',
+        },        withCredentials: true,
+      })
+      if(res.data.success) {
+        const updatedCommentData = [...comments, res.data.comment];
+        setComments(updatedCommentData);
 
-  if (!post) return null;
+        const updatedPostData = posts.map(p => p._id  === post._id ? {...p, comments: updatedCommentData} : p);
+
+           dispatch(setPosts(updatedPostData));
+
+        toast.success(res.data.message || "Comment added successfully");
+        setText("");
+      }
+    } catch(error){
+      console.log(error);
+    }
+  }
+
+  const deletePostHandler = async () => {
+    try{
+      const res = await axios.delete(`http://localhost:8000/api/v1/post/delete/${post._id}`, {
+        withCredentials: true,
+      });
+      if(res.data.success) {
+        const updatedPosts = posts.filter((postItem) => postItem?._id !== post._id);
+        dispatch(setPosts(updatedPosts));
+        toast.success(res.data.message || "Post deleted successfully");
+      }
+    } catch(error) {
+      console.log(error);  
+      toast.error(error.response.data.message || "Something went wrong");
+    }
+  }
 
   return (
-    <div className='my-20 w-full max-w-sm mx-auto relative' style={{ fontSize: '14px' }}>
-      {/* User Header */}
-      <div className='flex items-center gap-2 mb-2'>
-        <ImageFallback
-          src={post.author?.profilePicture || 'https://img.daisyui.com/images/profile/demo/batperson@192.webp'}
-          fallbackSrc='https://t4.ftcdn.net/jpg/11/28/72/75/240_F_1128727502_ce2UdfqSn42Ia48OeSy7a6UBX590HZnJ.jpg'
-          alt='Profile'
-          className="w-8 h-8 rounded-full overflow-hidden"
-        />
-        <h1 className='font-semibold'>{post.author?.username || 'Unknown User'}</h1>
-        <button className="btn btn-outline btn-success flex gap-2 items-center border-none">Follow</button>
-      </div>
-
-      {/* Menu */}
-      <div className="absolute top-2 right-2 cursor-pointer text-xl font-bold select-none" onClick={() => setShowMenu(prev => !prev)}>
-        &#x22EE;
-      </div>
-
-      {showMenu && (
-        <div ref={menuRef} className="absolute top-8 right-2 bg-gray-800 text-white rounded shadow-lg w-40 z-50">
-          {['Edit Post', 'Delete Post', 'Report Post'].map(opt => (
-            <button key={opt} className="block w-full text-left px-4 py-2 hover:bg-gray-700" onClick={() => handleMenuClick(opt)}>
-              {opt}
-            </button>
-          ))}
+    <div className=' select-none my-8 w-full max-w-sm mx-auto'>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Avatar>
+            <AvatarImage src={post.author?.profilePicture} alt='post_image' />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <h1 className='select-text'>{post.author?.username}</h1>
         </div>
-      )}
+        <Dialog>
+          <DialogTrigger asChild>
+            <MoreHorizontal className='cursor-pointer' />
+          </DialogTrigger>
+          <DialogContent className='flex flex-col items-center text-sm text-center caret-transparent select-none'>
 
-      {/* Post Image */}
-      <img
-        className='rounded-sm my-2 w-full aspect-square object-cover'
-        src={post.image || 'https://via.placeholder.com/300'}
-        alt="post_img"
-      />
-
-      {/* Actions */}
-      <div className='relative flex my-5' style={{ width: '380px', height: '30px', fontSize: '24px' }}>
-        <div className='flex gap-5 absolute left-0 top-0 px-3'>
-          <i className="fi fi-rs-heart cursor-pointer"></i>
-          <i className="fi fi-rr-comment-alt cursor-pointer" onClick={() => setOpen(true)}></i>
-          <i className="fi fi-rs-paper-plane cursor-pointer"></i>
-        </div>
-        <div className='absolute right-0 top-0 px-3'>
-          <i className="fi fi-rr-bookmark cursor-pointer"></i>
-        </div>
+           {
+             user && user._id !== post?.author._id && <Button variant='ghost' className='cursor-pointer w-fit text-[#ED4596] font-bold'>Unfollow</Button>
+          }
+            <Button variant='ghost' className='cursor-pointer w-fit'>Add to favourites</Button>
+            
+            {
+              user && user._id === post?.author._id &&
+              <Button variant='ghost' 
+              className='cursor-pointer w-fit'
+              onClick={deletePostHandler}
+              >Delete</Button>
+            }
+            
+          </DialogContent>
+        </Dialog>
       </div>
+      <img className='rounded-sm my-2 w-full aspect-square object-cover' src={post.image} alt="post_img" />
+      <div className='flex justify-between items-center my-2'>
+        <div className=''>
 
-      <span className='font-medium mb-2 block -mt-3'>{post.likes?.length || 0} likes</span>
-      <p>
-        <span className='font-medium mr-2'>{post.author?.username || 'username'}</span>
-        {post.caption || ''}
+          {liked ? <FaHeart onClick={likeOrDislikeHandler} className='inline cursor-pointer text-red-500' size={20} /> : 
+          <FaRegHeart onClick={likeOrDislikeHandler} className='inline cursor-pointer' size={20} />}
+
+          <MessageCircle onClick={() => setOpened(true)} className='inline ml-4 cursor-pointer' size={20} />
+          <Send className='inline ml-4 cursor-pointer' size={20} />
+        </div>
+        <Bookmark className='inline float-right cursor-pointer' size={20} />
+      </div>
+      <span className='font-med block mb-2'>{postLike} likes</span>
+      <p className='select-text'>
+        <span className='font-medium mr-2'>{post.author?.username || "Unknown"}</span>
+        {post.caption}
       </p>
-
-      <span className="text-blue-500 cursor-pointer" onClick={() => setOpen(true)}>View all comments</span>
-      <CommentDialog open={open} setOpen={setOpen} />
-
-      <div className='flex mt-3'>
-        <input
-          type='text'
-          placeholder='Add a comment!'
-          value={text}
-          onChange={changeEventHandler}
-          className='outline-none text-sm w-full'
-        />
-        {text && <span className="text-blue-500 cursor-pointer">Post</span>}
+      <span onClick={() => setOpened(true)}>View all {comments.length} comments</span>
+      <CommentDialog open={opened} setOpen={setOpened} />
+      <div className='mt-1 pt-2 flex items-center gap-2'>
+        <input type="text" placeholder='Add a comment' value={text} onChange={changeEventHAndler} className='outline-none text-sm w-full' />
+        {
+          text && <span onClick={commentHandler} className='text-[#3BADF8]'>Post</span>
+        }
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Post;
+export default Post

@@ -1,201 +1,168 @@
-// CreatePost.jsx
-import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom";
+import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
+import React, { useRef, useState } from 'react'
+import { DialogClose } from './ui/dialog';
+import { Avatar } from './ui/avatar';
+import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import { Textarea } from './ui/textarea';
+import { Button } from './ui/button';
+import { readFileAsDataURL } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { setPosts } from '@/redux/postSlice';
 
-const categoryTagsMap = {
-  Entertainment: ["Memes", "Personal"],
-  Learning: ["Tutorials", "Facts", "News"],
-  Coding: ["DSA", "Dev", "Tech News"],
-  "Art & Literature": ["Artworks", "Poems", "Stories"],
-};
+
+const categories = [
+  "Entertainment",
+  "Sports",
+  "Gaming",
+  "Learning",
+  "Coding",
+  "Art & Literature",
+];
 
 const CreatePost = ({ open, setOpen }) => {
-  const [step, setStep] = useState(1);
-  const [category, setCategory] = useState("");
-  const [postText, setPostText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [tags, setTags] = useState([]);
+  const [file, setFile] = useState("");
+  const [caption, setCaption] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useSelector(store => store.auth);
+  const dispatch = useDispatch();
+  const {posts} = useSelector(store => store.post);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
 
-  const resetForm = () => {
-    setStep(1);
-    setCategory("");
-    setPostText("");
-    setImagePreview(null);
-    setImageFile(null);
-    setTags([]);
-  };
-
-  if (!open) return null;
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const fileChangeHandler = async (e) => {
+    const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (event) => setImagePreview(event.target.result);
-      reader.readAsDataURL(file);
+      setFile(file);
+      const dataUrl = await readFileAsDataURL(file);
+      setImagePreview(dataUrl);
     }
   };
 
-  const handlePost = async () => {
+  const imageRef = useRef();
+
+  const createPostHandler = async (e) => {
+    const formData = new FormData();
+    formData.append("caption", caption);
+    if (imagePreview) formData.append("image", file);
+    if (selectedCategory) formData.append("category", selectedCategory);
     try {
-      const formData = new FormData();
-      formData.append("caption", postText);
-      formData.append("category", category);
-      formData.append("tag", tags[0] || "");
-      formData.append("image", imageFile);
-
-     const response = await fetch("http://localhost:8000/api/v1/post/addpost", {
-      method: "POST",
-      credentials: "include", // ← ye important hai cookie bhejne ke liye
-      body: formData,
-    });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to create post");
-
-      console.log("Post created:", data);
-      resetForm();
-      setOpen(false);
+      setLoading(true);
+      const res = await axios.post('http://localhost:8000/api/v1/post/addpost', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        dispatch(setPosts([ res.data.post, ...posts])); 
+        setOpen(false);
+        toast.success(res.data.message || "Post created successfully");
+      }
     } catch (error) {
-      console.error("Error creating post:", error);
+      toast.error(error.response.data.message || "Error creating post");
+    }
+    finally {
+      setLoading(false);
     }
   };
 
-  const availableTags = category ? categoryTagsMap[category] : [];
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent onInteractOutside={() => setOpen(false)}>
+        <DialogHeader className="text-center font-semibold">Create New Post</DialogHeader>
+        <div className="flex items-center gap-4">
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={user?.profilePicture} alt="img" />
+            <AvatarFallback className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
+              CN
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="font-semibold text-xs">{user?.username}</h1>
+            <span className="text-gray-600 text-xs">{user?.bio}</span>
+          </div>
+        </div>
 
-  // Use Portal to render modal at root
-  return ReactDOM.createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex justify-center items-center bg-black/70 backdrop-blur-sm px-4"
-      onClick={() => setOpen(false)} // close on overlay click
-    >
-      <div
-        className="bg-gray-900 rounded-xl max-w-5xl w-full max-h-[85vh] flex overflow-hidden shadow-2xl border border-gray-700"
-        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-      >
-        {/* Left preview */}
-        <div className="w-1/2 bg-gray-950 flex items-center justify-center p-4">
-          {step === 2 && imagePreview ? (
+        <div>
+          <div>Select Categort</div>
+          <div className="flex gap-5 justify-center my-1 flex-wrap">
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Entertainment" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Entertainment" ? "" : "Entertainment")}>Entertainment</Button>
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Sports" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Sports" ? "" : "Sports")}>Sports</Button>
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Gaming" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Gaming" ? "" : "Gaming")}>
+              Gaming
+            </Button>
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Learning" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Learning" ? "" : "Learning")}>
+              Learning
+            </Button>
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Coding" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Coding" ? "" : "Coding")}>Coding</Button>
+
+            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Art & Literature" ? "bg-black text-white" : ""}`}
+              onClick={() => setSelectedCategory(selectedCategory === "Art & Literature" ? "" : "Art & Literature")}>Art & Literature</Button>
+          </div>
+        </div>
+
+        {imagePreview && (
+          <div className="w-full h-64 flex items-center justify-center">
             <img
               src={imagePreview}
-              alt="Preview"
-              className="object-cover rounded-lg shadow-md max-h-full max-w-full"
+              alt="img"
+              className="object-cover h-full w-full rounded-md"
             />
-          ) : (
-            <div className="text-gray-500 text-center px-4">
-              {step === 1 ? (
-                <p className="text-lg font-medium">Select a category to start your post</p>
-              ) : (
-                <p className="mb-2 text-sm italic">No image selected</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right input */}
-        <div className="w-1/2 flex flex-col bg-gray-900 text-white">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b border-gray-800">
-            <h2 className="font-semibold text-xl">{step === 1 ? "Select Category" : "Create Post"}</h2>
-            <button
-              className="text-gray-400 font-bold text-3xl leading-none hover:text-red-500 transition"
-              onClick={() => setOpen(false)}
-              aria-label="Close"
-            >
-              &times;
-            </button>
           </div>
+        )}
 
-          {step === 1 ? (
-            <div className="grid grid-cols-1 gap-3 px-6 py-6">
-              {Object.keys(categoryTagsMap).map((cat) => (
-                <button
-                  key={cat}
-                  className="bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-lg transition border border-gray-700 hover:border-blue-500 hover:shadow-md"
-                  onClick={() => {
-                    setCategory(cat);
-                    setStep(2);
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <>
-              {/* Image upload */}
-              <div className="p-4 border-b border-gray-800">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="text-sm text-white file:bg-blue-600 file:hover:bg-blue-700 file:text-white file:rounded-full file:px-4 file:py-1 file:border-none file:cursor-pointer transition"
-                />
-              </div>
+        <Textarea
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          className="focus-visible:ring-transparent border-none"
+          placeholder="Write a caption..."
+        />
 
-              {/* Tags */}
-              {availableTags.length > 0 && (
-                <div className="px-6 py-3 flex flex-wrap gap-2">
-                  {availableTags.map((tag) => (
-                    <label
-                      key={tag}
-                      className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm cursor-pointer transition border ${
-                        tags.includes(tag)
-                          ? "bg-blue-600 border-blue-500"
-                          : "bg-gray-800 border-gray-700 hover:bg-gray-700"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={tags.includes(tag)}
-                        onChange={(e) => {
-                          if (e.target.checked) setTags([tag]);
-                          else setTags([]);
-                        }}
-                        className="hidden"
-                      />
-                      {tag}
-                    </label>
-                  ))}
-                </div>
-              )}
 
-              {/* Caption */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 mt-2">
-                <textarea
-                  value={postText}
-                  onChange={(e) => setPostText(e.target.value)}
-                  placeholder="Write a caption..."
-                  className="w-full resize-y bg-gray-700 border border-gray-600 rounded p-2 text-white outline-none focus:ring-2 focus:ring-blue-500 min-h-28 max-h-48 overflow-y-auto"
-                />
-              </div>
+        <input
+          ref={imageRef}
+          type="file"
+          className="hidden"
+          onChange={fileChangeHandler}
+        />
 
-              {/* Post button */}
-              <div className="px-6 py-4 border-t border-gray-800">
-                <button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold transition"
-                  disabled={!imageFile || tags.length === 0}
-                  onClick={handlePost}
-                >
-                  Post
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>,
-    document.body
+        <Button
+          onClick={() => imageRef.current.click()}
+          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf]"
+        >
+          Select from computer
+        </Button>
+        {
+          imagePreview && (
+            loading ? (
+              <Button>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button onClick={createPostHandler} type="submit" className="w-full">
+                Post
+              </Button>
+            )
+          )
+        }
+
+      </DialogContent>
+    </Dialog>
   );
 };
 

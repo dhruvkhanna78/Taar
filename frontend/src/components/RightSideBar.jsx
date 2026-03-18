@@ -1,11 +1,10 @@
 import React from 'react'
 
-const RightSideBar = () => {
+const RightSidebar = () => {
   return (
-    <div>
-      RightSidebar
+    <div className='caret-transparent select-none'>
     </div>
   )
 }
 
-export default RightSideBar
+export default RightSidebar
