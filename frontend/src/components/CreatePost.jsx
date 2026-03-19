@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
 import React, { useRef, useState } from 'react'
-import { DialogClose } from './ui/dialog';
 import { Avatar } from './ui/avatar';
 import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import { Textarea } from './ui/textarea';
@@ -12,7 +11,6 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 
-
 const categories = [
   "Entertainment",
   "Sports",
@@ -23,22 +21,23 @@ const categories = [
 ];
 
 const CreatePost = ({ open, setOpen }) => {
-  const [file, setFile] = useState("");
+  const [file, setFile] = useState([]); // Array for multiple files
   const [caption, setCaption] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
+  const [imagePreview, setImagePreview] = useState([]); // Array for previews
   const [loading, setLoading] = useState(false);
   const { user } = useSelector(store => store.auth);
   const dispatch = useDispatch();
-  const {posts} = useSelector(store => store.post);
+  const { posts } = useSelector(store => store.post);
   const [selectedCategory, setSelectedCategory] = useState("");
 
-
   const fileChangeHandler = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
-      const dataUrl = await readFileAsDataURL(file);
-      setImagePreview(dataUrl);
+    // FIX: e.target.file ko e.target.files kiya aur Array.from lagaya
+    const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
+    if (selectedFiles.length > 0) {
+      setFile(selectedFiles);
+      const previewPromises = selectedFiles.map((f) => readFileAsDataURL(f));
+      const allPreviews = await Promise.all(previewPromises);
+      setImagePreview(allPreviews); // Multiple previews set kiye
     }
   };
 
@@ -47,8 +46,17 @@ const CreatePost = ({ open, setOpen }) => {
   const createPostHandler = async (e) => {
     const formData = new FormData();
     formData.append("caption", caption);
-    if (imagePreview) formData.append("image", file);
     if (selectedCategory) formData.append("category", selectedCategory);
+
+    // Multiple files append logic
+    file.forEach((f) => {
+      if (f.type.startsWith("image/")) {
+        formData.append("images", f); // Match with backend upload.fields
+      } else if (f.type.startsWith("video/")) {
+        formData.append("video", f);
+      }
+    });
+
     try {
       setLoading(true);
       const res = await axios.post('http://localhost:8000/api/v1/post/addpost', formData, {
@@ -58,21 +66,25 @@ const CreatePost = ({ open, setOpen }) => {
         withCredentials: true,
       });
       if (res.data.success) {
-        dispatch(setPosts([ res.data.post, ...posts])); 
+        dispatch(setPosts([res.data.post, ...posts]));
         setOpen(false);
         toast.success(res.data.message || "Post created successfully");
+        // Reset states
+        setFile([]);
+        setImagePreview([]);
+        setCaption("");
+        setSelectedCategory("");
       }
     } catch (error) {
-      toast.error(error.response.data.message || "Error creating post");
-    }
-    finally {
+      toast.error(error.response?.data?.message || "Error creating post");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent onInteractOutside={() => setOpen(false)}>
+      <DialogContent onInteractOutside={() => { setOpen(false); setImagePreview([]); setFile([]); setCaption(""); }} className="sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader className="text-center font-semibold">Create New Post</DialogHeader>
         <div className="flex items-center gap-4">
           <Avatar className="w-10 h-10">
@@ -88,40 +100,32 @@ const CreatePost = ({ open, setOpen }) => {
         </div>
 
         <div>
-          <div>Select Categort</div>
+          <div>Select Category</div>
           <div className="flex gap-5 justify-center my-1 flex-wrap">
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Entertainment" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Entertainment" ? "" : "Entertainment")}>Entertainment</Button>
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Sports" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Sports" ? "" : "Sports")}>Sports</Button>
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Gaming" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Gaming" ? "" : "Gaming")}>
-              Gaming
-            </Button>
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Learning" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Learning" ? "" : "Learning")}>
-              Learning
-            </Button>
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Coding" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Coding" ? "" : "Coding")}>Coding</Button>
-
-            <Button className={`border-none bg-transparent shadow-none text-black hover:text-white ${selectedCategory === "Art & Literature" ? "bg-black text-white" : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === "Art & Literature" ? "" : "Art & Literature")}>Art & Literature</Button>
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                className={`border-none bg-transparent shadow-none text-black hover:text-gray-500 ${selectedCategory === cat ? "bg-black text-white" : ""}`}
+                onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+              >
+                {cat}
+              </Button>
+            ))}
           </div>
         </div>
 
-        {imagePreview && (
-          <div className="w-full h-64 flex items-center justify-center">
-            <img
-              src={imagePreview}
-              alt="img"
-              className="object-cover h-full w-full rounded-md"
-            />
+        {/* Previews Loop */}
+        {imagePreview.length > 0 && (
+          <div className="w-full flex flex-col gap-2">
+            {imagePreview.map((src, index) => (
+              <div key={index} className="w-full h-64 flex items-center justify-center">
+                <img
+                  src={src}
+                  alt="preview"
+                  className="object-cover h-full w-full rounded-md"
+                />
+              </div>
+            ))}
           </div>
         )}
 
@@ -132,10 +136,12 @@ const CreatePost = ({ open, setOpen }) => {
           placeholder="Write a caption..."
         />
 
-
+        {/* Hidden Input with Multiple/Video support */}
         <input
           ref={imageRef}
           type="file"
+          accept="image/*,video/*"
+          multiple
           className="hidden"
           onChange={fileChangeHandler}
         />
@@ -146,21 +152,19 @@ const CreatePost = ({ open, setOpen }) => {
         >
           Select from computer
         </Button>
-        {
-          imagePreview && (
-            loading ? (
-              <Button>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </Button>
-            ) : (
-              <Button onClick={createPostHandler} type="submit" className="w-full">
-                Post
-              </Button>
-            )
-          )
-        }
 
+        {imagePreview.length > 0 && (
+          loading ? (
+            <Button disabled>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button>
+          ) : (
+            <Button onClick={createPostHandler} type="submit" className="w-full hover:text-gray-500">
+              Post
+            </Button>
+          )
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -7,6 +7,7 @@ import MainLayout from './components/MainLayout.jsx'
 // import { Home } from 'lucide-react'
 import Profile from './components/Profile.jsx'
 import Home from './components/Home.jsx'
+import VerificationPage from './components/VerificationPage.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const browserRouter = createBrowserRouter([
   {
     path: '/login',
     element: <Login />
+  },
+  {
+    path: '/verify-otp', // Naya route for OTP
+    element: <VerificationPage />
   }
 ])
 

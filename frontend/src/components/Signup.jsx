@@ -30,7 +30,7 @@ const Signup = () => {
         withCredentials: true // Include credentials for CORS (for cookies)
       });
       if (res.data.success) {
-        navigate('/login'); // Redirect to login page on successful signup
+        navigate('/verify-otp', { state: { email: input.email } }); // Redirect to verificationPage page on successful signup
         toast.success(res.data.message);
         setInput({ email: '', username: '', password: '' }); // Reset input fields
       }
