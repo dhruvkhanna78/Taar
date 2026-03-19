@@ -4,48 +4,129 @@ import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
 
+// export const addNewPost = async (req, res) => {
+//   try {
+//     const { caption, category, tag } = req.body;
+//     const image = req.file;
+//     const authorId = req.id; // from isAuthenticated middleware
+
+//     // || !category || !tag add this later
+//     if (!image) {
+//       return res.status(400).json({
+//         message: "Complete the process!",
+//         success: false,
+//       });
+//     }
+
+//     // Image resize and optimize
+//     const optimizedImageBuffer = await sharp(image.buffer)
+//       .resize({
+//         width: 800,
+//         height: 800,
+//         fit: "inside",
+//       })
+//       .toFormat("jpeg", { quality: 80 })
+//       .toBuffer();
+
+//     // Convert buffer to Data URI
+//     const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
+//       "base64"
+//     )}`;
+
+//     // Upload to Cloudinary
+//     const cloudinaryResponse = await cloudinary.uploader.upload(fileUri);
+
+//     // Create post
+//     const post = await Post.create({
+//       caption,
+//       category,
+//       tag,
+//       image: cloudinaryResponse.secure_url,
+//       author: authorId,
+//     });
+
+//     // Add post to author's profile
+//     const user = await User.findById(authorId);
+//     if (user) {
+//       user.posts.push(post._id);
+//       await user.save();
+//     }
+
+//     await post.populate({ path: "author", select: "-password" });
+
+//     return res.status(201).json({
+//       message: "New post added",
+//       post,
+//       success: true,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({
+//       message: "Server error",
+//       success: false,
+//     });
+//   }
+// };
+
 export const addNewPost = async (req, res) => {
   try {
     const { caption, category, tag } = req.body;
-    const image = req.file;
-    const authorId = req.id; // from isAuthenticated middleware
+    const authorId = req.id;
 
-    // || !category || !tag add this later
-    if (!image) {
+    // 1. Files access karna (Images aur Video)
+    const imageFiles = req.files['images'] || []; // Array of images
+    const videoFile = req.files['video'] ? req.files['video'][0] : null; // Single video
+
+    if (imageFiles.length === 0 && !videoFile) {
       return res.status(400).json({
-        message: "Complete the process!",
+        message: "Kam se kam ek image ya video toh dalo!",
         success: false,
       });
     }
 
-    // Image resize and optimize
-    const optimizedImageBuffer = await sharp(image.buffer)
-      .resize({
-        width: 800,
-        height: 800,
-        fit: "inside",
-      })
-      .toFormat("jpeg", { quality: 80 })
-      .toBuffer();
+    // --- IMAGES PROCESSING ---
+    const imageUrls = [];
+    if (imageFiles.length > 0) {
+      // Har image ko loop mein process karenge
+      const imagePromises = imageFiles.map(async (file) => {
+        const optimizedBuffer = await sharp(file.buffer)
+          .resize({ width: 800, height: 800, fit: "inside" })
+          .toFormat("jpeg", { quality: 80 })
+          .toBuffer();
 
-    // Convert buffer to Data URI
-    const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
-      "base64"
-    )}`;
+        const fileUri = `data:image/jpeg;base64,${optimizedBuffer.toString("base64")}`;
+        const res = await cloudinary.uploader.upload(fileUri);
+        return res.secure_url;
+      });
 
-    // Upload to Cloudinary
-    const cloudinaryResponse = await cloudinary.uploader.upload(fileUri);
+      // Saari images upload hone ka wait karenge
+      const uploadedImages = await Promise.all(imagePromises);
+      imageUrls.push(...uploadedImages);
+    }
 
-    // Create post
+    // --- VIDEO PROCESSING ---
+    let videoUrl = null;
+    if (videoFile) {
+      // Video ko buffer se base64 banakar direct upload karenge
+      // Note: Video ke liye resource_type: "video" zaroori hai
+      const videoUri = `data:${videoFile.mimetype};base64,${videoFile.buffer.toString("base64")}`;
+      const cloudVideo = await cloudinary.uploader.upload(videoUri, {
+        resource_type: "video",
+      });
+      videoUrl = cloudVideo.secure_url;
+    }
+
+    // 2. Database mein Post Create karna
     const post = await Post.create({
       caption,
       category,
       tag,
-      image: cloudinaryResponse.secure_url,
+      image: imageUrls, // Ab ye Array store karega
+      video: videoUrl,   // Video ke liye naya field (agar model mein hai)
       author: authorId,
     });
 
-    // Add post to author's profile
+    // 3. User update logic (Same rahega)
     const user = await User.findById(authorId);
     if (user) {
       user.posts.push(post._id);
@@ -61,10 +142,7 @@ export const addNewPost = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
-      message: "Server error",
-      success: false,
-    });
+    return res.status(500).json({ message: "Server error", success: false });
   }
 };
 

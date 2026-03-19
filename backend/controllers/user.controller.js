@@ -5,6 +5,7 @@ import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { sendOTPEmail } from "../services/emailServices.js";
+import { otpGenerateAndSend } from "../utils/otpHelper.js";
 
 //Register function
 export const register = async (req, res) => {
@@ -33,10 +34,15 @@ export const register = async (req, res) => {
 
     const hashedpassword = await bcrypt.hash(password, 10);
 
+    const { otp, otpExpiry } = await otpGenerateAndSend(email);
+
     await User.create({
       username,
       email,
       password: hashedpassword,
+      isVerified: false,
+      otp,
+      otpExpiry: Date.now() + 5 * 60 * 1000,
     });
 
     return res.status(201).json({
@@ -47,7 +53,7 @@ export const register = async (req, res) => {
     console.log(error);
     return res.status(500).json({
       message: "Server error, please try again",
-      success: false
+      success: false,
     });
   }
 };
@@ -79,9 +85,9 @@ export const login = async (req, res) => {
       });
     }
 
-     // Generate token(ticket to stay logged in) after passing all the steps
+    // Generate token(ticket to stay logged in) after passing all the steps
     const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-    expiresIn: "7d",
+      expiresIn: "7d",
     });
 
     // const populatedPosts = await Promise.all(
@@ -105,8 +111,7 @@ export const login = async (req, res) => {
       following: user.following,
       posts: user.posts,
     };
-    
-   
+
     return res
       .cookie("token", token, {
         httpOnly: true,
@@ -116,123 +121,137 @@ export const login = async (req, res) => {
       .json({
         message: `Welcome back ${user.username}`,
         success: true,
-        user: user
+        user: user,
       });
   } catch (error) {
     console.log(error);
     // Yeh line add karein varna frontend fasa rahega
     return res.status(500).json({
       message: "Server error, please try again",
-      success: false
+      success: false,
     });
   }
 };
 
 //Verification of user
-export const sendOTPController = async (req, res) => {
-  try{
-    const {email} = req.body;
-    if(!email){
+export const resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
       return res.status(400).json({
         message: "Email is required",
         success: false,
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); //generating random 6 digit otp
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); //otp valid for 5 minutes
-
-    let user = await User.findOne({email});
-    if(!user){
+    let user = await User.findOne({ email });
+    if (!user) {
       return res.status(400).json({
         message: "User not found",
         success: false,
-      })
+      });
     }
 
+    const { otp, otpExpiry } = await otpGenerateAndSend(email);
     user.otp = otp;
     user.otpExpiry = otpExpiry;
     await user.save();
-
-    sendOTPEmail(email, otp);
 
     return res.status(200).json({
       message: "OTP sent to your email",
       success: true,
     });
-
-  } catch(error){
+  } catch (error) {
     return res.status(500).json({
       message: "Server error, please try again",
-      success: false
+      success: false,
     });
   }
-}
+};
 
 //OTP verification function
-export const verifyOtp = async(req, res) => {
-  try{
-    const {email, otp} = req.body;
+// OTP verification function (Complete & Fixed)
+export const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
 
-    if(!email){
-      return res.status(400).json({
-        message: "Email is required",
-        success: false,
-      });
+        if (!email || !otp) {
+            return res.status(400).json({
+                message: "Email and OTP are required",
+                success: false,
+            });
+        }
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({
+                message: "User not found",
+                success: false,
+            });
+        }
+
+        // Check Expiry
+        if (user.otpExpiry < Date.now()) {
+            return res.status(400).json({
+                message: "OTP expired",
+                success: false,
+            });
+        }
+
+        // Check OTP (String conversion for safety)
+        if (user.otp.toString() !== otp.toString()) {
+            return res.status(400).json({
+                message: "Invalid OTP",
+                success: false,
+            });
+        }
+
+        // Verify user and clear OTP fields
+        user.isVerified = true;
+        user.otp = null;
+        user.otpExpiry = null;
+        await user.save();
+
+        // Generate Token (Ticket) - Taaki signup ke baad login na karna pade
+        const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+            expiresIn: "7d",
+        });
+
+        // Essential User Data for Frontend
+        const userResponse = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture,
+            bio: user.bio,
+            follower: user.follower,
+            following: user.following,
+            posts: user.posts,
+        };
+
+        // Set Cookie and Send Response
+        return res
+            .cookie("token", token, {
+                httpOnly: true,
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            })
+            .status(200)
+            .json({
+                message: "OTP verified & Logged in successfully!",
+                success: true,
+                user: userResponse, // Frontend Redux ke liye
+            });
+
+    } catch (error) {
+        console.log("Verify OTP Error:", error);
+        return res.status(500).json({
+            message: "Server error, please try again",
+            success: false,
+        });
     }
-
-    if(!otp){
-      return res.status(400).json({
-        message: "OTP is required",
-        success: false,
-      });
-    }
-
-    let user = await User.findOne({email});
-
-    if(!user){
-      return res.status(400).json({
-        message: "User not found",
-        success: false,
-      });
-    }
-
-    if(user.otpExpiry < Date.now()){
-      return res.status(400).json({
-        message: "OTP expired",
-        success: false,
-      });
-    }
-
-    if(user.otp !== otp){
-      return res.status(400).json({
-        message: "Invalid OTP",
-        success: false,
-      });
-    }
-
-
-    user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
-    await user.save();
-
-    return res.status(200).json({
-      message: "OTP verified successfully",
-      success: true,
-    });
-
-    
-  } catch(error){
-    console.log(error);
-    return res.status(500).json({
-      message: "Server error, please try again",
-      success: false
-    });
-  }
-
-
-}
+};
 
 //Logout function
 export const logout = async (_, res) => {
@@ -299,7 +318,7 @@ export const editProfile = async (req, res) => {
 export const getSuggestedUsers = async (req, res) => {
   try {
     const SuggestedUsers = await User.find({ id: { $ne: req.id } }).select(
-      "-password"
+      "-password",
     );
     if (!SuggestedUsers) {
       return res.status(400).json({
@@ -315,7 +334,6 @@ export const getSuggestedUsers = async (req, res) => {
     console.log(error);
   }
 };
-
 
 //Follow or Unfollow function
 export const followOrUnfollow = async (req, res) => {
@@ -348,12 +366,12 @@ export const followOrUnfollow = async (req, res) => {
         //followKarneWala ki id mein jo following table hai usme jiskoFollowKarunga use remove kardiya
         User.updateOne(
           { _id: followKarneWala },
-          { $pull: { following: jiskoFollowKarunga } }
+          { $pull: { following: jiskoFollowKarunga } },
         ),
         //jiskoFollowKarunga ki id mein jo follower table hai usme followKarneWala ko remove kardiya
         User.updateOne(
           { _id: jiskoFollowKarunga },
-          { $pull: { follower: followKarneWala } }
+          { $pull: { follower: followKarneWala } },
         ),
       ]);
       return res.status(200).json({
@@ -366,12 +384,12 @@ export const followOrUnfollow = async (req, res) => {
         //followKarneWala ki id mein jo following table hai usme jiskoFollowKarunga use push kardiya
         User.updateOne(
           { _id: followKarneWala },
-          { $push: { following: jiskoFollowKarunga } }
+          { $push: { following: jiskoFollowKarunga } },
         ),
         //jiskoFollowKarunga ki id mein jo follower table hai usme followKarneWala ko push kardiya
         User.updateOne(
           { _id: jiskoFollowKarunga },
-          { $push: { follower: followKarneWala } }
+          { $push: { follower: followKarneWala } },
         ),
       ]);
       return res.status(200).json({

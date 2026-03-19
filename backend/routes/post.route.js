@@ -15,7 +15,14 @@ import {
 
 const router = express.Router();
 
-router.route("/addpost").post(isAuthenticated, upload.single("image"), addNewPost);
+router.route("/addpost").post(
+  isAuthenticated, 
+  upload.fields([
+    { name: 'images', maxCount: 10 }, // Aap 10 images tak allow kar rahe hain
+    { name: 'video', maxCount: 1 }     // Ek video allow kar rahe hain
+  ]), 
+  addNewPost
+);
 router.route("/all").get(isAuthenticated, getAllPost);
 router.route("/userpost/all").get(isAuthenticated, getUserPost);
 router.route("/:id/like").get(isAuthenticated, likePost);
