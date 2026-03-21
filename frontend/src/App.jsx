@@ -1,4 +1,4 @@
-import path from 'path'
+// import path from 'path'
 import Signup from './components/Signup.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Children } from 'react'
@@ -8,6 +8,7 @@ import MainLayout from './components/MainLayout.jsx'
 import Profile from './components/Profile.jsx'
 import Home from './components/Home.jsx'
 import VerificationPage from './components/VerificationPage.jsx'
+import "./App.css";
 
 const browserRouter = createBrowserRouter([
   {

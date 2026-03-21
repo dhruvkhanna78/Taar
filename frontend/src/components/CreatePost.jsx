@@ -116,18 +116,38 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-          <div className="w-full flex flex-col gap-2">
-            {imagePreview.map((src, index) => (
-              <div key={index} className="w-full h-64 flex items-center justify-center">
-                <img
-                  src={src}
-                  alt="preview"
-                  className="object-cover h-full w-full rounded-md"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+  <div className="w-full flex flex-col gap-2">
+    {imagePreview.map((src, index) => {
+      if (!src) return null;
+
+      const fileType = file[index]?.type;
+
+      if (fileType.startsWith("image/")) {
+        return (
+          <img
+            key={index}
+            src={src}
+            alt="preview"
+            className="object-cover h-64 w-full rounded-md"
+          />
+        );
+      }
+
+      if (fileType.startsWith("video/")) {
+        return (
+          <video
+            key={index}
+            src={src}
+            controls
+            className="object-cover h-64 w-full rounded-md"
+          />
+        );
+      }
+
+      return null;
+    })}
+  </div>
+)}
 
         <Textarea
           value={caption}
