@@ -23,7 +23,7 @@ const Signup = () => {
   setLoading(true);
   try {
     // Check kar lo: agar URL ke end mein slash hai toh yahan se hata dena
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/register`, input, {
+    const res = await axios.post("https://taar-server.onrender.com/api/v1/user/register", input, {
       headers: {
         'Content-Type': 'application/json'
       },
