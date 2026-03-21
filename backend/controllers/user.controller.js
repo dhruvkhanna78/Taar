@@ -7,50 +7,67 @@ import { Post } from "../models/post.model.js";
 import { sendOTPEmail } from "../services/emailServices.js";
 import { otpGenerateAndSend } from "../utils/otpHelper.js";
 
-//Register function
+// Register function
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    
+    // 1. Basic Validation
     if (!username || !email || !password) {
       return res.status(401).json({
         message: "Something is missing, please check!",
         success: false,
       });
     }
-    const user = await User.findOne({ email });
-    if (user) {
+
+    // 2. Check existing user
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
       return res.status(401).json({
-        message: "This email is already in use",
-        success: false,
-      });
-    }
-    const validUsername = await User.findOne({ username });
-    if (validUsername) {
-      return res.status(401).json({
-        message: "This username is already in use",
+        message: "User or Email already exists",
         success: false,
       });
     }
 
     const hashedpassword = await bcrypt.hash(password, 10);
 
-    const { otp, otpExpiry } = await otpGenerateAndSend(email);
+    // 3. OTP Generation & Sending (Iska fail hona handle karna zaroori hai)
+    let otpData;
+    try {
+      otpData = await otpGenerateAndSend(email);
+    } catch (mailError) {
+      console.log("Mail service error:", mailError);
+      return res.status(500).json({
+        message: "Failed to send OTP. Please try again later.",
+        success: false,
+      });
+    }
 
+    // Double check if otp was actually generated
+    if (!otpData || !otpData.otp) {
+        return res.status(500).json({
+          message: "OTP generation failed",
+          success: false,
+        });
+    }
+
+    // 4. Create User ONLY if OTP was sent
     await User.create({
       username,
       email,
       password: hashedpassword,
       isVerified: false,
-      otp,
-      otpExpiry: Date.now() + 5 * 60 * 1000,
+      otp: otpData.otp,
+      otpExpiry: otpData.otpExpiry,
     });
 
     return res.status(201).json({
-      message: "Account created successfully!",
+      message: "OTP sent to email. Verify to activate account.",
       success: true,
     });
+
   } catch (error) {
-    console.log(error);
+    console.log("Global Register Error:", error);
     return res.status(500).json({
       message: "Server error, please try again",
       success: false,
