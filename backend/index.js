@@ -38,5 +38,5 @@ app.use("/api/v1/message", messageRoute);
 
 app.listen(PORT, () => {
   connectDB();
-  console.log(`Server listen at http://localhost:${PORT} and https://taar-5wse0z4a1-dhruvs-projects-0d586136.vercel.app`);
+  console.log(`Server listen at http://localhost:${PORT}`);
 });
