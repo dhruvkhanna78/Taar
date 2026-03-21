@@ -115,7 +115,8 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "none",
+        secure: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({
@@ -172,85 +173,85 @@ export const resendOTP = async (req, res) => {
 //OTP verification function
 // OTP verification function (Complete & Fixed)
 export const verifyOtp = async (req, res) => {
-    try {
-        const { email, otp } = req.body;
+  try {
+    const { email, otp } = req.body;
 
-        if (!email || !otp) {
-            return res.status(400).json({
-                message: "Email and OTP are required",
-                success: false,
-            });
-        }
-
-        let user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(400).json({
-                message: "User not found",
-                success: false,
-            });
-        }
-
-        // Check Expiry
-        if (user.otpExpiry < Date.now()) {
-            return res.status(400).json({
-                message: "OTP expired",
-                success: false,
-            });
-        }
-
-        // Check OTP (String conversion for safety)
-        if (user.otp.toString() !== otp.toString()) {
-            return res.status(400).json({
-                message: "Invalid OTP",
-                success: false,
-            });
-        }
-
-        // Verify user and clear OTP fields
-        user.isVerified = true;
-        user.otp = null;
-        user.otpExpiry = null;
-        await user.save();
-
-        // Generate Token (Ticket) - Taaki signup ke baad login na karna pade
-        const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-            expiresIn: "7d",
-        });
-
-        // Essential User Data for Frontend
-        const userResponse = {
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            profilePicture: user.profilePicture,
-            bio: user.bio,
-            follower: user.follower,
-            following: user.following,
-            posts: user.posts,
-        };
-
-        // Set Cookie and Send Response
-        return res
-            .cookie("token", token, {
-                httpOnly: true,
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            })
-            .status(200)
-            .json({
-                message: "OTP verified & Logged in successfully!",
-                success: true,
-                user: userResponse, // Frontend Redux ke liye
-            });
-
-    } catch (error) {
-        console.log("Verify OTP Error:", error);
-        return res.status(500).json({
-            message: "Server error, please try again",
-            success: false,
-        });
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required",
+        success: false,
+      });
     }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Check Expiry
+    if (user.otpExpiry < Date.now()) {
+      return res.status(400).json({
+        message: "OTP expired",
+        success: false,
+      });
+    }
+
+    // Check OTP (String conversion for safety)
+    if (user.otp.toString() !== otp.toString()) {
+      return res.status(400).json({
+        message: "Invalid OTP",
+        success: false,
+      });
+    }
+
+    // Verify user and clear OTP fields
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    // Generate Token (Ticket) - Taaki signup ke baad login na karna pade
+    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    // Essential User Data for Frontend
+    const userResponse = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      follower: user.follower,
+      following: user.following,
+      posts: user.posts,
+    };
+
+    // Set Cookie and Send Response
+    return res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .status(200)
+      .json({
+        message: "OTP verified & Logged in successfully!",
+        success: true,
+        user: userResponse, // Frontend Redux ke liye
+      });
+  } catch (error) {
+    console.log("Verify OTP Error:", error);
+    return res.status(500).json({
+      message: "Server error, please try again",
+      success: false,
+    });
+  }
 };
 
 //Logout function
