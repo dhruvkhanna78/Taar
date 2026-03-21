@@ -5,6 +5,9 @@ import { useDispatch } from "react-redux";
 
 function useGetAllPost() {
     const dispatch = useDispatch();
+
+    console.log("ENV CHECK:", import.meta.env);
+    console.log("API:", import.meta.env.VITE_API_URL);
     // Hook implementation
     useEffect(() => {
         // Fetch all posts logic here
