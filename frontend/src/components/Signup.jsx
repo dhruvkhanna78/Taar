@@ -19,31 +19,33 @@ const Signup = () => {
   }
 
   const signupHandler = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-    console.log("Signup data:", input);
-    setLoading(true);
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/register`, input, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true // Include credentials for CORS (for cookies)
-      });
-      if (res.data.success) {
-        if (res.data.success) {
-          localStorage.setItem("otpEmail", input.email);
-          navigate('/verify-otp');
-        } // Redirect to verificationPage page on successful signup
-        toast.success(res.data.message);
-        setInput({ email: '', username: '', password: '' }); // Reset input fields
-      }
-    } catch (err) {
-      console.log("Error response data:", err.response?.data);
-      toast.error(err.response?.data?.message || "An error occurred during signup");
-    } finally {
-      setLoading(false); // Reset loading state after request
+  e.preventDefault();
+  setLoading(true);
+  try {
+    // Check kar lo: agar URL ke end mein slash hai toh yahan se hata dena
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/register`, input, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    });
+
+    if (res.data.success) {
+      // Clean success handling
+      localStorage.setItem("otpEmail", input.email);
+      toast.success(res.data.message);
+      setInput({ email: '', username: '', password: '' });
+      navigate('/verify-otp'); // Yahan redirect kar diya
     }
+  } catch (err) {
+    // Axios error handling improvement
+    const errorMessage = err.response?.data?.message || "Something went wrong";
+    console.log("Signup Error:", errorMessage);
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className='flex items-center w-screen h-screen justify-center'>
