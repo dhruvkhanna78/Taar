@@ -9,6 +9,7 @@ import { otpGenerateAndSend } from "../utils/otpHelper.js";
 
 // Register function
 export const register = async (req, res) => {
+  console.log("📥 Payload received:", req.body);
   try {
     const { username, email, password } = req.body;
     
