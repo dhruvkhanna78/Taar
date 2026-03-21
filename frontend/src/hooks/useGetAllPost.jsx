@@ -10,7 +10,7 @@ function useGetAllPost() {
         // Fetch all posts logic here
         const fetchAllPost = async () => {
             try {
-                const res = await axios.get('http://localhost:8000/api/v1/post/all', { withCredentials: true });
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/post/all`, { withCredentials: true });
                 if (res.data.success) {
                     console.log("Fetched posts:", res.data);
                     dispatch(setPosts(res.data.posts));

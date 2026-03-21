@@ -19,7 +19,7 @@ const VerificationPage = () => {
         if(!otp) return toast.error("Please enter OTP");
 
         try {
-            const res = await axios.post('http://localhost:8000/api/v1/user/verify-otp', 
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/verify-otp`, 
                 { email, otp }, 
                 { 
                     headers: { 'Content-Type': 'application/json' },

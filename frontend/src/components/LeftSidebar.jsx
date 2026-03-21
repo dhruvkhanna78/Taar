@@ -15,7 +15,7 @@ const LeftSidebar = () => {
         const ok = window.confirm("Are you sure you want to logout?");
         if (!ok) return;
         try {
-            const res = await axios.get('http://localhost:8000/api/v1/user/logout', { withCredentials: true });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/user/logout`, { withCredentials: true });
             if (res.data.success) {
                 toast.success(res.data.message);
                 navigate('/login'); // Redirect to login page on successful logout
