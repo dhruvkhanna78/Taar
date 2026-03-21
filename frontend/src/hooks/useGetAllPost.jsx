@@ -13,7 +13,7 @@ function useGetAllPost() {
         // Fetch all posts logic here
         const fetchAllPost = async () => {
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/post/all`, { withCredentials: true });
+                const res = await axios.get(`https://taar-5wse0z4a1-dhruvs-projects-0d586136.vercel.app/api/v1/post/all`, { withCredentials: true });
                 if (res.data.success) {
                     console.log("Fetched posts:", res.data);
                     dispatch(setPosts(res.data.posts));
