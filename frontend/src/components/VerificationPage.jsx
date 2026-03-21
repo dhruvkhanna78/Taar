@@ -6,35 +6,41 @@ import { setAuthUser } from '@/redux/authSlice'; // Path check kar lena apne pro
 import { toast } from 'sonner';
 
 const VerificationPage = () => {
+    React.useEffect(() => {
+        if (!email) {
+            toast.error("Session expired. Please signup again.");
+            navigate("/signup");
+        }
+    }, [email]);
     const [otp, setOtp] = React.useState('');
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    
-    const email = location.state?.email; 
+
+    const email =
+        location.state?.email ||
+        localStorage.getItem("otpEmail");
 
     const submitHAndler = async (e) => {
         e.preventDefault();
-        
-        if(!otp) return toast.error("Please enter OTP");
+
+        if (!otp) return toast.error("Please enter OTP");
 
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/verify-otp`, 
-                { email, otp }, 
-                { 
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/verify-otp`,
+                { email, otp },
+                {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true // Cookie set karne ke liye zaroori hai
                 }
             );
 
             if (res.data.success) {
-                // 1. Redux store update karo taaki login status active ho jaye
-                dispatch(setAuthUser(res.data.user)); 
-                
-                // 2. Alert ki jagah toast
-                toast.success(res.data.message || "OTP Verified Successfully!");
-                
-                // 3. Home page par redirect
+                dispatch(setAuthUser(res.data.user));
+
+                localStorage.removeItem("otpEmail");
+
+                toast.success(res.data.message);
                 navigate('/');
             }
         } catch (err) {
@@ -52,8 +58,8 @@ const VerificationPage = () => {
                     <p className="text-sm text-gray-600 text-center">
                         Sent to: <span className="font-semibold">{email || "your email"}</span>
                     </p>
-                    
-                    <input 
+
+                    <input
                         type="text"
                         placeholder='Enter 6-digit OTP'
                         className="border p-2 rounded outline-none focus:ring-2 focus:ring-blue-400 text-center tracking-widest text-lg"
@@ -61,8 +67,8 @@ const VerificationPage = () => {
                         onChange={(e) => setOtp(e.target.value)}
                         maxLength={6}
                     />
-                    
-                    <button 
+
+                    <button
                         type='submit'
                         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded transition-all"
                     >
