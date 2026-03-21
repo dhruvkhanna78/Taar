@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://taar-5wse0z4a1-dhruvs-projects-0d586136.vercel.app"],
+  origin: ["http://localhost:5173", "https://taar-5wse0z4a1-dhruvs-projects-0d586136.vercel.app","https://taarclient-9b0bwg41g-dhruvs-projects-0d586136.vercel.app"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
