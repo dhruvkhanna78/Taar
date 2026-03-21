@@ -1,4 +1,3 @@
-// import path from 'path'
 import Signup from './components/Signup.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Children } from 'react'
