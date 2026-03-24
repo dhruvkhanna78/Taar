@@ -78,7 +78,7 @@ Taar (meaning 'wire' or 'connection') aims to bridge the gap between users with 
 
   - [x] Initial Backend Setup
   - [x] Basic UI Framework
-  - [ ] OTP Verification Integration
+  - [x] OTP Verification Integration
   - [ ] Real-time Chat Functionality
   - [ ] Deployment to Production
 
