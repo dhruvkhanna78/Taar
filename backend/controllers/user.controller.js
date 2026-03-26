@@ -76,6 +76,7 @@ export const register = async (req, res) => {
 };
 
 //Login function
+//Login function
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -102,22 +103,12 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate token(ticket to stay logged in) after passing all the steps
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "7d",
-    });
+    const token = await jwt.sign(
+      { userId: user._id },
+      process.env.SECRET_KEY,
+      { expiresIn: "7d" }
+    );
 
-    // const populatedPosts = await Promise.all(
-    //   user.posts.map(async (postId)=>{
-    //     const post = await Post.findById(postId);
-    //     if(post.author.equals(user._id)){
-    //       return post;
-    //     }
-    //     return null;
-    //   })
-    // );
-
-    // creating user object to store essential data
     user = {
       _id: user._id,
       username: user.username,
@@ -132,18 +123,19 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
+        sameSite: "lax",
+        secure: false,
+        path: "/",              // IMPORTANT FIX
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({
         message: `Welcome back ${user.username}`,
         success: true,
-        user: user,
+        user,
       });
+
   } catch (error) {
     console.log(error);
-    // Yeh line add karein varna frontend fasa rahega
     return res.status(500).json({
       message: "Server error, please try again",
       success: false,
@@ -187,8 +179,7 @@ export const resendOTP = async (req, res) => {
   }
 };
 
-//OTP verification function
-// OTP verification function (Complete & Fixed)
+// OTP verification function
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -209,7 +200,6 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // Check Expiry
     if (user.otpExpiry < Date.now()) {
       return res.status(400).json({
         message: "OTP expired",
@@ -217,7 +207,6 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // Check OTP (String conversion for safety)
     if (user.otp.toString() !== otp.toString()) {
       return res.status(400).json({
         message: "Invalid OTP",
@@ -225,18 +214,17 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // Verify user and clear OTP fields
     user.isVerified = true;
     user.otp = null;
     user.otpExpiry = null;
     await user.save();
 
-    // Generate Token (Ticket) - Taaki signup ke baad login na karna pade
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "7d",
-    });
+    const token = await jwt.sign(
+      { userId: user._id },
+      process.env.SECRET_KEY,
+      { expiresIn: "1d" }
+    );
 
-    // Essential User Data for Frontend
     const userResponse = {
       _id: user._id,
       username: user.username,
@@ -248,20 +236,21 @@ export const verifyOtp = async (req, res) => {
       posts: user.posts,
     };
 
-    // Set Cookie and Send Response
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: "lax",
+        secure: false,
+        path: "/",              // IMPORTANT FIX
+        maxAge: 24 * 60 * 60 * 1000,
       })
       .status(200)
       .json({
         message: "OTP verified & Logged in successfully!",
         success: true,
-        user: userResponse, // Frontend Redux ke liye
+        user: userResponse,
       });
+
   } catch (error) {
     console.log("Verify OTP Error:", error);
     return res.status(500).json({
@@ -272,12 +261,20 @@ export const verifyOtp = async (req, res) => {
 };
 
 //Logout function
+//Logout function
 export const logout = async (_, res) => {
   try {
-    return res.cookie("token", "", { maxAge: 0 }).json({
-      message: "Logged out successfully.",
-      success: true,
-    });
+    return res
+      .clearCookie("token", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        path: "/",          // CRITICAL FIX
+      })
+      .json({
+        message: "Logged out successfully.",
+        success: true,
+      });
   } catch (error) {
     console.log(error);
   }
