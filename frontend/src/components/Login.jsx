@@ -39,31 +39,34 @@ const Login = () => {
         setInput({ email: '', password: '' }); // Reset input fields
       }
     } catch (err) {
-    console.log("Error full object:", err);
+      console.log("Error full object:", err);
 
-    if (err.response) {
+      if (err.response) {
         // Backend se response aaya hai (403, 401, 500 etc.)
         const { status, data } = err.response;
 
         // 1. Agar account verified nahi hai (Status 403)
         if (status === 403 && data.needsVerification) {
-            toast.info(data.message);
-            // navigate karte waqt state mein email bhej rahe hain
-            navigate('/verify-otp', { state: { email: input.email } }); 
-            return; // Yahan se return hona zaroori hai warna niche wala toast bhi chal jayega
+          toast.info(data.message);
+
+          // email save karo taaki VerificationPage use kar sake
+          localStorage.setItem("otpEmail", input.email);
+
+          navigate("/verify-otp");
+          return;
         }
 
         // 2. Baaki errors (Incorrect password, etc.)
         toast.error(data?.message || "Login failed");
 
-    } else if (err.request) {
+      } else if (err.request) {
         // Request chali gayi par response nahi aaya
         toast.error("No response from server. Please check your connection.");
-    } else {
+      } else {
         // Kuch aur hi phat gaya
         toast.error("An error occurred. Please try again.");
-    }
-}finally {
+      }
+    } finally {
       setLoading(false); // Reset loading state after request
     }
   }
