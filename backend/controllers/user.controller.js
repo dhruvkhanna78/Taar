@@ -64,7 +64,6 @@ export const register = async (req, res) => {
 };
 
 //Login function
-//Login function
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -91,18 +90,36 @@ export const login = async (req, res) => {
       });
     }
 
+    // --- LOGIC UPDATE: Handling Unverified Users ---
     if (!user.isVerified) {
-      return res.status(403).json({
-        message: "Please verify your email with OTP before logging in.",
-        success: false,
-      });
+      // User sahi hai par verify nahi hai, toh naya OTP bhej do
+      try {
+        const otpData = await otpGenerateAndSend(email);
+        
+        user.otp = otpData.otp;
+        user.otpExpiry = otpData.otpExpiry;
+        await user.save();
+
+        return res.status(403).json({
+          message: "Account not verified. A fresh OTP has been sent to your email.",
+          success: false,
+          needsVerification: true, // Frontend logic ke liye flag
+          email: user.email       // Frontend ko redirect karne mein aasani hogi
+        });
+      } catch (otpError) {
+        return res.status(500).json({
+          message: "Account not verified and failed to send OTP. Please try again.",
+          success: false,
+        });
+      }
     }
 
+    // --- Verified Users Continue Here ---
     const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
       expiresIn: "7d",
     });
 
-    user = {
+    const userResponse = {
       _id: user._id,
       username: user.username,
       email: user.email,
@@ -117,17 +134,17 @@ export const login = async (req, res) => {
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "lax",
-        secure: false,
-        path: "/", // IMPORTANT FIX
+        secure: false, // Production mein true kar dena (https)
+        path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({
-        message: `Welcome back ${user.username}`,
+        message: `Welcome back ${userResponse.username}`,
         success: true,
-        user,
+        user: userResponse,
       });
   } catch (error) {
-    console.log(error);
+    console.log("Login Error:", error);
     return res.status(500).json({
       message: "Server error, please try again",
       success: false,
