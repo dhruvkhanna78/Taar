@@ -42,21 +42,24 @@ const Login = () => {
       console.log("Error full object:", err);
 
       if (err.response) {
-        console.log("Error response data:", err.response.data);
-        toast.error(err.response.data?.message || "Login failed");
-      } else if (err.request) {
-        console.log("Error request (no response):", err.request);
-        toast.error("No response from server");
-      } else if (error.response.status === 403 && error.response.data.needsVerification) {
-        // User ko OTP verification screen par redirect kardo
-        navigate('/verify-otp', { state: { email: data.email } });
-        toast.info("Please verify the OTP sent to your mail");
-      } else {
-        console.log("Error message:", err.message);
-        toast.error(err.message || "Unknown error");
-      }
-      toast.error(err.response?.data?.message || "An error occurred during signup");
+        const { status, data } = err.response;
 
+        // 1. Check for Unverified User (Status 403)
+        if (status === 403 && data.needsVerification) {
+          toast.info(data.message || "Please verify your email first");
+          // navigate karte waqt email pass kar rahe hain taaki verify page par field auto-fill ho sake
+          navigate('/verify-otp', { state: { email: input.email } });
+          return; // Yahan se return ho jao taaki niche ke generic error toasts na chalein
+        }
+
+        // 2. Default Error Handling (status 401, 500 etc)
+        toast.error(data?.message || "Login failed");
+
+      } else if (err.request) {
+        toast.error("No response from server. Check your internet.");
+      } else {
+        toast.error("An unexpected error occurred");
+      }
     } finally {
       setLoading(false); // Reset loading state after request
     }
