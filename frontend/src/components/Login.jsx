@@ -41,30 +41,23 @@ const Login = () => {
     } catch (err) {
       console.log("Error full object:", err);
 
+      // 1. Check if backend sent a response
       if (err.response) {
-        // Backend se response aaya hai (403, 401, 500 etc.)
         const { status, data } = err.response;
 
-        // 1. Agar account verified nahi hai (Status 403)
+        // ⚠️ SABSE PEHLE 403 CHECK KARO
         if (status === 403 && data.needsVerification) {
-          toast.info(data.message);
-
-          // email save karo taaki VerificationPage use kar sake
-          localStorage.setItem("otpEmail", input.email);
-
-          navigate("/verify-otp");
-          return;
+          toast.info(data.message || "Email verification pending. OTP sent!");
+          // Navigation trigger
+          navigate('/verify-otp', { state: { email: input.email } });
+          return; // Yahan se bahar nikal jao
         }
 
-        // 2. Baaki errors (Incorrect password, etc.)
+        // 2. Baaki generic errors (Incorrect pass, etc.)
         toast.error(data?.message || "Login failed");
-
-      } else if (err.request) {
-        // Request chali gayi par response nahi aaya
-        toast.error("No response from server. Please check your connection.");
       } else {
-        // Kuch aur hi phat gaya
-        toast.error("An error occurred. Please try again.");
+        // Server down ya internet issue
+        toast.error("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false); // Reset loading state after request
