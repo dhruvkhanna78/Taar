@@ -103,11 +103,16 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = await jwt.sign(
-      { userId: user._id },
-      process.env.SECRET_KEY,
-      { expiresIn: "7d" }
-    );
+    if (!user.isVerified) {
+      return res.status(403).json({
+        message: "Please verify your email with OTP before logging in.",
+        success: false,
+      });
+    }
+
+    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "7d",
+    });
 
     user = {
       _id: user._id,
@@ -125,7 +130,7 @@ export const login = async (req, res) => {
         httpOnly: true,
         sameSite: "lax",
         secure: false,
-        path: "/",              // IMPORTANT FIX
+        path: "/", // IMPORTANT FIX
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({
@@ -133,7 +138,6 @@ export const login = async (req, res) => {
         success: true,
         user,
       });
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -219,11 +223,9 @@ export const verifyOtp = async (req, res) => {
     user.otpExpiry = null;
     await user.save();
 
-    const token = await jwt.sign(
-      { userId: user._id },
-      process.env.SECRET_KEY,
-      { expiresIn: "1d" }
-    );
+    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "1d",
+    });
 
     const userResponse = {
       _id: user._id,
@@ -241,7 +243,7 @@ export const verifyOtp = async (req, res) => {
         httpOnly: true,
         sameSite: "lax",
         secure: false,
-        path: "/",              // IMPORTANT FIX
+        path: "/", // IMPORTANT FIX
         maxAge: 24 * 60 * 60 * 1000,
       })
       .status(200)
@@ -250,7 +252,6 @@ export const verifyOtp = async (req, res) => {
         success: true,
         user: userResponse,
       });
-
   } catch (error) {
     console.log("Verify OTP Error:", error);
     return res.status(500).json({
@@ -269,7 +270,7 @@ export const logout = async (_, res) => {
         httpOnly: true,
         sameSite: "lax",
         secure: false,
-        path: "/",          // CRITICAL FIX
+        path: "/", // CRITICAL FIX
       })
       .json({
         message: "Logged out successfully.",
@@ -343,7 +344,6 @@ export const editProfile = async (req, res) => {
       success: true,
       user,
     });
-
   } catch (error) {
     console.log("EDIT PROFILE ERROR:", error);
 
