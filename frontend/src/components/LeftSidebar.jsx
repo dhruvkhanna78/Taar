@@ -20,6 +20,7 @@ import { setAuthUser, setUserProfile } from "@/redux/authSlice";
 
 const LeftSidebar = () => {
 const { user } = useSelector((store) => store.auth);
+if (!user) return null;
 
 const dispatch = useDispatch();
 const navigate = useNavigate();
