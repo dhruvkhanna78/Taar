@@ -127,8 +127,8 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
-        secure: false, // Production mein true kar dena (https)
+        sameSite: "none",
+        secure: true, // Production mein true kar dena (https)
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
@@ -240,8 +240,8 @@ export const verifyOtp = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
-        secure: false,
+        sameSite: "none",
+        secure: true,
         path: "/", // IMPORTANT FIX
         maxAge: 24 * 60 * 60 * 1000,
       })
@@ -267,8 +267,8 @@ export const logout = async (_, res) => {
     return res
       .clearCookie("token", {
         httpOnly: true,
-        sameSite: "lax",
-        secure: false,
+        sameSite: "none",
+        secure: true,
         path: "/", // CRITICAL FIX
       })
       .json({
