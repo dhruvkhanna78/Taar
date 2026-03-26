@@ -39,25 +39,29 @@ const Login = () => {
         setInput({ email: '', password: '' }); // Reset input fields
       }
     } catch (err) {
-      console.log("Error full object:", err);
+      const response = err.response;
 
-      // 1. Check if backend sent a response
-      if (err.response) {
-        const { status, data } = err.response;
+      if (response) {
+        const { status, data } = response;
 
-        // ⚠️ SABSE PEHLE 403 CHECK KARO
-        if (status === 403 && data.needsVerification) {
-          toast.info(data.message || "Email verification pending. OTP sent!");
-          // Navigation trigger
-          navigate('/verify-otp', { state: { email: input.email } });
-          return; // Yahan se bahar nikal jao
+        // Debugging ke liye
+        console.log("Backend Status:", status);
+
+        // Agar backend 'needsVerification' true bhej raha hai
+        if (status === 403 && data.needsVerification === true) {
+          toast.info(data.message || "Please verify your account");
+
+          // Navigate ko return ke saath ensure karein
+          return navigate('/verify-otp', {
+            state: { email: input.email },
+            replace: true // History stack clean rakhne ke liye
+          });
         }
 
-        // 2. Baaki generic errors (Incorrect pass, etc.)
+        // Baaki normal errors
         toast.error(data?.message || "Login failed");
       } else {
-        // Server down ya internet issue
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Network error or server down");
       }
     } finally {
       setLoading(false); // Reset loading state after request
