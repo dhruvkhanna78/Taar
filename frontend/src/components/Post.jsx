@@ -43,7 +43,6 @@ const Post = ({ post }) => {
   const likeOrDislikeHandler = async () => {
     const action = liked ? "dislike" : "like";
 
-    // ❤️ animation trigger
     setAnimateLike(true);
     setTimeout(() => setAnimateLike(false), 300);
 

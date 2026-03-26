@@ -12,7 +12,7 @@ export const register = async (req, res) => {
   console.log("📥 Payload received:", req.body);
   try {
     const { username, email, password } = req.body;
-    
+
     // 1. Basic Validation
     if (!username || !email || !password) {
       return res.status(401).json({
@@ -46,10 +46,10 @@ export const register = async (req, res) => {
 
     // Double check if otp was actually generated
     if (!otpData || !otpData.otp) {
-        return res.status(500).json({
-          message: "OTP generation failed",
-          success: false,
-        });
+      return res.status(500).json({
+        message: "OTP generation failed",
+        success: false,
+      });
     }
 
     // 4. Create User ONLY if OTP was sent
@@ -66,7 +66,6 @@ export const register = async (req, res) => {
       message: "OTP sent to email. Verify to activate account.",
       success: true,
     });
-
   } catch (error) {
     console.log("Global Register Error:", error);
     return res.status(500).json({
@@ -288,13 +287,29 @@ export const logout = async (_, res) => {
 export const getprofile = async (req, res) => {
   try {
     const userId = req.params.id;
-    let user = await User.findById(userId);
-    return res.status(200).json({
-      user,
-      success: true,
-    });
+
+    // Check agar userId undefined ya null toh nahi
+    if (!userId || userId === "undefined") {
+      return res.status(400).json({
+        message: "User ID is required",
+        success: false,
+      });
+    }
+
+    const user = await User.findById(userId)
+      .populate({ path: "posts", options: { sort: { createdAt: -1 } } })
+      .populate("bookmarks");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    return res.status(200).json({ user, success: true });
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Server error", success: false });
   }
 };
 
@@ -303,13 +318,7 @@ export const editProfile = async (req, res) => {
   try {
     const userId = req.id;
     const { bio, gender } = req.body;
-    const profilePicture = req.file; //We take picture using .file
 
-    let cloudResponse;
-    if (profilePicture) {
-      const fileUri = getDataUri(profilePicture);
-      cloudResponse = await cloudinary.Uploader.upload(fileUri);
-    }
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -320,17 +329,31 @@ export const editProfile = async (req, res) => {
 
     if (bio) user.bio = bio;
     if (gender) user.gender = gender;
-    if (profilePicture) user.profilePicture = cloudResponse.secure_url;
+
+    // safe file handling
+    if (req.file) {
+      const fileUri = getDataUri(req.file);
+
+      const cloudResponse = await cloudinary.uploader.upload(fileUri);
+
+      user.profilePicture = cloudResponse.secure_url;
+    }
 
     await user.save();
 
-    return res.status(404).json({
+    return res.status(200).json({
       message: "Profile updated successfully",
       success: true,
       user,
     });
+
   } catch (error) {
-    console.log(error);
+    console.log("EDIT PROFILE ERROR:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+      success: false,
+    });
   }
 };
 

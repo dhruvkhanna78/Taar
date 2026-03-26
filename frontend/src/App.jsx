@@ -8,6 +8,7 @@ import Profile from './components/Profile.jsx'
 import Home from './components/Home.jsx'
 import VerificationPage from './components/VerificationPage.jsx'
 import "./App.css";
+import EditProfile from './components/EditProfile.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -15,11 +16,15 @@ const browserRouter = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        path: '/',
+        index: true,
         element: <Home />
       },
       {
-        path: '/profile',
+        path: "profile/edit",
+        element: <EditProfile />
+      },
+      {
+        path: "profile/:id",
         element: <Profile />
       }
     ]
@@ -33,10 +38,10 @@ const browserRouter = createBrowserRouter([
     element: <Login />
   },
   {
-    path: '/verify-otp', // Naya route for OTP
+    path: '/verify-otp',
     element: <VerificationPage />
   }
-])
+]);
 
 function App() {
 
