@@ -13,57 +13,45 @@ export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 1. Basic Validation
     if (!username || !email || !password) {
+      return res.status(401).json({ message: "Something is missing", success: false });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (user && user.isVerified) {
       return res.status(401).json({
-        message: "Something is missing, please check!",
+        message: "User already exists and is verified. Please login.",
         success: false,
       });
     }
 
-    // 2. Check existing user
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(401).json({
-        message: "User or Email already exists",
-        success: false,
-      });
-    }
-
+    // OTP Generate and Send
+    let otpData = await otpGenerateAndSend(email);
     const hashedpassword = await bcrypt.hash(password, 10);
 
-    // 3. OTP Generation & Sending (Iska fail hona handle karna zaroori hai)
-    let otpData;
-    try {
-      otpData = await otpGenerateAndSend(email);
-    } catch (mailError) {
-      console.log("Mail service error:", mailError);
-      return res.status(500).json({
-        message: "Failed to send OTP. Please try again later.",
-        success: false,
+    if (user && !user.isVerified) {
+      // AGAR USER HAI PAR VERIFIED NAHI HAI: Toh purana data update karo
+      user.username = username;
+      user.password = hashedpassword;
+      user.otp = otpData.otp;
+      user.otpExpiry = otpData.otpExpiry;
+      await user.save();
+    } else {
+      // AGAR USER BILKUL NAYA HAI: Toh create karo
+      await User.create({
+        username,
+        email,
+        password: hashedpassword,
+        isVerified: false,
+        otp: otpData.otp,
+        otpExpiry: otpData.otpExpiry,
       });
     }
-
-    // Double check if otp was actually generated
-    if (!otpData || !otpData.otp) {
-      return res.status(500).json({
-        message: "OTP generation failed",
-        success: false,
-      });
-    }
-
-    // 4. Create User ONLY if OTP was sent
-    await User.create({
-      username,
-      email,
-      password: hashedpassword,
-      isVerified: false,
-      otp: otpData.otp,
-      otpExpiry: otpData.otpExpiry,
-    });
 
     return res.status(201).json({
-      message: "OTP sent to email. Verify to activate account.",
+      message: "OTP sent to email. Please verify.",
       success: true,
     });
   } catch (error) {
