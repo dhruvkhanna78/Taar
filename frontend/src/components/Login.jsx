@@ -47,12 +47,16 @@ const Login = () => {
       } else if (err.request) {
         console.log("Error request (no response):", err.request);
         toast.error("No response from server");
+      } else if (error.response.status === 403 && error.response.data.needsVerification) {
+        // User ko OTP verification screen par redirect kardo
+        navigate('/verify-otp', { state: { email: data.email } });
+        toast.info("Please verify the OTP sent to your mail");
       } else {
         console.log("Error message:", err.message);
         toast.error(err.message || "Unknown error");
       }
-
       toast.error(err.response?.data?.message || "An error occurred during signup");
+
     } finally {
       setLoading(false); // Reset loading state after request
     }

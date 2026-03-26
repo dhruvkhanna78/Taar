@@ -91,27 +91,21 @@ export const login = async (req, res) => {
     }
 
     // --- LOGIC UPDATE: Handling Unverified Users ---
-    if (!user.isVerified) {
-      // User sahi hai par verify nahi hai, toh naya OTP bhej do
-      try {
-        const otpData = await otpGenerateAndSend(email);
-        
-        user.otp = otpData.otp;
-        user.otpExpiry = otpData.otpExpiry;
-        await user.save();
+   if (!user.isVerified) {
+      // 1. Pehle OTP bhej do (Ye line missing thi tumhare purane code mein)
+      const otpData = await otpGenerateAndSend(email);
+      
+      // 2. DB mein naya OTP update karo
+      user.otp = otpData.otp;
+      user.otpExpiry = otpData.otpExpiry;
+      await user.save();
 
-        return res.status(403).json({
-          message: "Account not verified. A fresh OTP has been sent to your email.",
-          success: false,
-          needsVerification: true, // Frontend logic ke liye flag
-          email: user.email       // Frontend ko redirect karne mein aasani hogi
-        });
-      } catch (otpError) {
-        return res.status(500).json({
-          message: "Account not verified and failed to send OTP. Please try again.",
-          success: false,
-        });
-      }
+      // 3. Phir error response bhejo frontend ko batane ke liye
+      return res.status(403).json({
+        message: "Account not verified. A new OTP has been sent to your email.",
+        success: false,
+        needsVerification: true // Isse frontend ko pata chalega ki OTP page pe bhejna hai
+      });
     }
 
     // --- Verified Users Continue Here ---
