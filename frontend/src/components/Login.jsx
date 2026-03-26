@@ -39,29 +39,27 @@ const Login = () => {
         setInput({ email: '', password: '' }); // Reset input fields
       }
     } catch (err) {
-      const response = err.response;
+      console.log("Error response data:", err.response?.data);
 
-      if (response) {
-        const { status, data } = response;
+      if (err.response) {
+        const { status, data } = err.response;
 
-        // Debugging ke liye
-        console.log("Backend Status:", status);
+        // 1. Agar account verify nahi hai (403)
+        if (status === 403 && data.needsVerification) {
+          toast.info(data.message || "Email verification pending.");
 
-        // Agar backend 'needsVerification' true bhej raha hai
-        if (status === 403 && data.needsVerification === true) {
-          toast.info(data.message || "Please verify your account");
+          // EMAIL KO LOCALSTORAGE MEIN DAALEIN (Jaise signup mein kiya tha)
+          localStorage.setItem("otpEmail", input.email);
 
-          // Navigate ko return ke saath ensure karein
-          return navigate('/verify-otp', {
-            state: { email: input.email },
-            replace: true // History stack clean rakhne ke liye
-          });
+          // Redirect to Verify OTP
+          navigate('/verify-otp');
+          return;
         }
 
-        // Baaki normal errors
+        // 2. Generic errors (Wrong password etc.)
         toast.error(data?.message || "Login failed");
       } else {
-        toast.error("Network error or server down");
+        toast.error("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false); // Reset loading state after request
