@@ -30,7 +30,7 @@ const VerificationPage = () => {
 
         try {
             const res = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/v1/user/verify-otp`,
+                `https://taar-server.onrender.com/api/v1/user/verify-otp`,
                 { email, otp },
                 {
                     headers: { 'Content-Type': 'application/json' },

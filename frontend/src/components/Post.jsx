@@ -68,7 +68,7 @@ const Post = ({ post }) => {
 
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/v1/post/${post._id}/${action}`,
+        `https://taar-server.onrender.com/api/v1/post/${post._id}/${action}`,
         { withCredentials: true }
       );
 
@@ -97,7 +97,7 @@ const Post = ({ post }) => {
   const commentHandler = async () => {
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/v1/post/${post._id}/comment`,
+        `https://taar-server.onrender.com/api/v1/post/${post._id}/comment`,
         { text },
         {
           headers: { 'Content-Type': 'application/json' },
@@ -127,7 +127,7 @@ const Post = ({ post }) => {
   const deletePostHandler = async () => {
     try {
       const res = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/v1/post/delete/${post._id}`,
+        `https://taar-server.onrender.com/api/v1/post/delete/${post._id}`,
         { withCredentials: true }
       );
 

@@ -15,7 +15,7 @@ useEffect(() => {
             // Naya fetch shuru hone se pehle purana clear kar sakte ho (Optional but safe)
             // dispatch(setUserProfile(null)); 
 
-            const res = await axios.get(`http://localhost:8000/api/v1/user/${userId}/profile`, { withCredentials: true });
+            const res = await axios.get(`https://taar-server.onrender.com/api/v1/user/${userId}/profile`, { withCredentials: true });
             if (res.data.success) { 
                 dispatch(setUserProfile(res.data.user));
             }
