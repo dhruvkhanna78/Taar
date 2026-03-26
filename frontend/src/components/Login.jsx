@@ -39,28 +39,31 @@ const Login = () => {
         setInput({ email: '', password: '' }); // Reset input fields
       }
     } catch (err) {
-      console.log("Error full object:", err);
+    console.log("Error full object:", err);
 
-      if (err.response) {
+    if (err.response) {
+        // Backend se response aaya hai (403, 401, 500 etc.)
         const { status, data } = err.response;
 
-        // 1. Check for Unverified User (Status 403)
+        // 1. Agar account verified nahi hai (Status 403)
         if (status === 403 && data.needsVerification) {
-          toast.info(data.message || "Please verify your email first");
-          // navigate karte waqt email pass kar rahe hain taaki verify page par field auto-fill ho sake
-          navigate('/verify-otp', { state: { email: input.email } });
-          return; // Yahan se return ho jao taaki niche ke generic error toasts na chalein
+            toast.info(data.message);
+            // navigate karte waqt state mein email bhej rahe hain
+            navigate('/verify-otp', { state: { email: input.email } }); 
+            return; // Yahan se return hona zaroori hai warna niche wala toast bhi chal jayega
         }
 
-        // 2. Default Error Handling (status 401, 500 etc)
+        // 2. Baaki errors (Incorrect password, etc.)
         toast.error(data?.message || "Login failed");
 
-      } else if (err.request) {
-        toast.error("No response from server. Check your internet.");
-      } else {
-        toast.error("An unexpected error occurred");
-      }
-    } finally {
+    } else if (err.request) {
+        // Request chali gayi par response nahi aaya
+        toast.error("No response from server. Please check your connection.");
+    } else {
+        // Kuch aur hi phat gaya
+        toast.error("An error occurred. Please try again.");
+    }
+}finally {
       setLoading(false); // Reset loading state after request
     }
   }
