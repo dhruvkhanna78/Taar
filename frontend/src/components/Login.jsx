@@ -49,7 +49,7 @@ const Login = () => {
         if (status === 403 && data.needsVerification) {
             toast.info(data.message);
             // navigate karte waqt state mein email bhej rahe hain
-            navigate('/verify-otp', { state: { email: input.email } }); 
+            navigate('/verify-otp'); 
             return; // Yahan se return hona zaroori hai warna niche wala toast bhi chal jayega
         }
 
