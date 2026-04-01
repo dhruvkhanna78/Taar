@@ -223,44 +223,39 @@ const Post = ({ post }) => {
 
           {/* Dots Indicator (Total items calculate karke) */}
           {(post.image?.length > 0 || post.video) && (
-            <div className="relative group">
-              {/* Slider Container */}
+            <div className="relative">
               <div
                 ref={sliderRef}
                 onScroll={handleScroll}
-                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-sm bg-black"
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
               >
-                {/* 1. Videos Render (if exists) */}
-                {post.video && (
-                  <div className="w-full aspect-square flex-shrink-0 snap-center flex items-center justify-center">
-                    <video
-                      src={post.video}
-                      controls
-                      className="w-full h-full object-contain"
-                      loop
-                      muted
-                    />
-                  </div>
-                )}
-
-                {/* 2. Images Render */}
+                {/* Images */}
                 {post.image?.map((img, index) => (
                   <img
-                    key={index}
+                    key={`img-${index}`}
                     src={img}
-                    alt="post_media"
+                    alt="post_img"
                     className="w-full aspect-square object-cover snap-center flex-shrink-0"
                   />
                 ))}
+
+                {/* Video */}
+                {post.video && (
+                  <video
+                    src={post.video}
+                    controls
+                    className="w-full aspect-square object-cover snap-center flex-shrink-0"
+                  />
+                )}
               </div>
 
-              {/* Dots Indicator (Total items calculate karke) */}
-              {((post.image?.length || 0) + (post.video ? 1 : 0)) > 1 && (
+              {/* Dots indicator */}
+              {(post.image?.length + (post.video ? 1 : 0)) > 1 && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                  {[...(post.video ? [null] : []), ...post.image].map((_, index) => (
+                  {[...Array(post.image?.length + (post.video ? 1 : 0))].map((_, index) => (
                     <span
                       key={index}
-                      className={`h-1.5 w-1.5 rounded-full transition-all ${activeIndex === index ? "bg-white scale-110" : "bg-white/40"
+                      className={`h-1.5 w-1.5 rounded-full ${activeIndex === index ? "bg-white" : "bg-white/40"
                         }`}
                     />
                   ))}
