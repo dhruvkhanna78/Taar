@@ -11,6 +11,7 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 import Cropper from "react-easy-crop";
+import "react-easy-crop/react-easy-crop.css";
 
 const categories = [
   "Entertainment",
