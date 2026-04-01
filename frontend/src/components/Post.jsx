@@ -189,41 +189,48 @@ const Post = ({ post }) => {
       </div>
 
       {/* Image */}
-      {post.image?.length > 0 && (
-        <div className="relative">
-          {/* Slider */}
-          <div
-            ref={sliderRef}
-            onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          >
-            {post.image.map((img, index) => (
-              <img
-                key={index}
-                src={img}
-                alt="post_img"
-                className="w-full aspect-square object-cover snap-center flex-shrink-0"
-              />
-            ))}
-          </div>
+      {(post.image?.length > 0 || post.video) && (
+  <div className="relative">
+    <div
+      ref={sliderRef}
+      onScroll={handleScroll}
+      className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+    >
+      {/* Images */}
+      {post.image?.map((img, index) => (
+        <img
+          key={`img-${index}`}
+          src={img}
+          alt="post_img"
+          className="w-full aspect-square object-cover snap-center flex-shrink-0"
+        />
+      ))}
 
-          {/* Dots */}
-          {post.image.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-              {post.image.map((_, index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 w-1.5 rounded-full ${activeIndex === index
-                      ? "bg-white"
-                      : "bg-white/40"
-                    }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Video */}
+      {post.video && (
+        <video
+          src={post.video}
+          controls
+          className="w-full aspect-square object-cover snap-center flex-shrink-0"
+        />
       )}
+    </div>
 
+    {/* Dots indicator */}
+    {(post.image?.length + (post.video ? 1 : 0)) > 1 && (
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+        {[...Array(post.image?.length + (post.video ? 1 : 0))].map((_, index) => (
+          <span
+            key={index}
+            className={`h-1.5 w-1.5 rounded-full ${
+              activeIndex === index ? "bg-white" : "bg-white/40"
+            }`}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)}
       {/* Actions */}
       <div className='flex justify-between items-center my-2'>
         <div>
