@@ -36,13 +36,12 @@ const CreatePost = ({ open, setOpen }) => {
   const [zoom, setZoom] = useState(1);
 
   const fileChangeHandler = async (e) => {
-    // FIX: e.target.file ko e.target.files kiya aur Array.from lagaya
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     if (selectedFiles.length > 0) {
       setFile(selectedFiles);
       const previewPromises = selectedFiles.map((f) => readFileAsDataURL(f));
       const allPreviews = await Promise.all(previewPromises);
-      setImagePreview(allPreviews); // Multiple previews set kiye
+      setImagePreview(allPreviews); 
     }
   };
 
@@ -53,10 +52,9 @@ const CreatePost = ({ open, setOpen }) => {
     formData.append("caption", caption);
     if (selectedCategory) formData.append("category", selectedCategory);
 
-    // Multiple files append logic
     file.forEach((f) => {
       if (f.type.startsWith("image/")) {
-        formData.append("images", f); // Match with backend upload.fields
+        formData.append("images", f); 
       } else if (f.type.startsWith("video/")) {
         formData.append("video", f);
       }
@@ -74,7 +72,6 @@ const CreatePost = ({ open, setOpen }) => {
         dispatch(setPosts([res.data.post, ...posts]));
         setOpen(false);
         toast.success(res.data.message || "Post created successfully");
-        // Reset states
         setFile([]);
         setImagePreview([]);
         setCaption("");
@@ -105,12 +102,13 @@ const CreatePost = ({ open, setOpen }) => {
         </div>
 
         <div>
-          <div>Select Category</div>
-          <div className="flex gap-5 justify-center my-1 flex-wrap">
+          <div className="font-medium mb-2">Select Category</div>
+          <div className="flex gap-2 justify-center my-1 flex-wrap">
             {categories.map((cat) => (
               <Button
                 key={cat}
-                className={`border-none bg-transparent shadow-none text-black hover:text-gray-500 ${selectedCategory === cat ? "bg-black text-white" : ""}`}
+                variant="outline"
+                className={`text-xs rounded-full ${selectedCategory === cat ? "bg-black text-white hover:bg-black" : "text-black"}`}
                 onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
               >
                 {cat}
@@ -119,86 +117,74 @@ const CreatePost = ({ open, setOpen }) => {
           </div>
         </div>
 
-        {/* Previews Loop */}
+        {/* Updated Preview Section for Cropper Visibility */}
         {imagePreview.length > 0 && (
-          <div className="relative w-full h-80 overflow-hidden rounded-xl bg-black shadow-md">
+          <div className="relative w-full h-80 flex items-center justify-center overflow-hidden rounded-md bg-black">
 
             {file[currentIndex]?.type.startsWith("image/") ? (
-              <>
-                {/* Cropper frame */}
-                <div className="absolute inset-0">
-                  <Cropper
-                    image={imagePreview[currentIndex]}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
+              <div className="relative w-full h-full">
+                <Cropper
+                  image={imagePreview[currentIndex]}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                />
+
+                {/* Zoom slider with z-index to stay on top */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 z-10 px-4 py-2 bg-black/40 rounded-full">
+                  <input
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    value={zoom}
+                    onChange={(e) => setZoom(Number(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
-
-                {/* Zoom slider */}
-                <input
-                  type="range"
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  value={zoom}
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 accent-white opacity-80 hover:opacity-100 transition"
-                />
-              </>
+              </div>
             ) : (
               <video
                 src={imagePreview[currentIndex]}
                 controls
-                className="absolute inset-0 h-full w-full object-cover"
+                className="object-contain h-full w-full"
               />
             )}
 
-            {/* Prev button */}
+            {/* Prev button - Added z-index */}
             {currentIndex > 0 && (
               <button
+                type="button"
                 onClick={() => setCurrentIndex(prev => prev - 1)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white px-3 py-1 rounded-full backdrop-blur-sm transition"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20 hover:bg-black"
               >
                 ◀
               </button>
             )}
 
-            {/* Next button */}
+            {/* Next button - Added z-index */}
             {currentIndex < imagePreview.length - 1 && (
               <button
+                type="button"
                 onClick={() => setCurrentIndex(prev => prev + 1)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white px-3 py-1 rounded-full backdrop-blur-sm transition"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20 hover:bg-black"
               >
                 ▶
               </button>
             )}
 
-            {/* Slide indicator dots */}
-            {imagePreview.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                {imagePreview.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full transition ${i === currentIndex ? "bg-white" : "bg-white/40"
-                      }`}
-                  />
-                ))}
-              </div>
-            )}
-
           </div>
         )}
+
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          className="focus-visible:ring-transparent border-none"
+          className="focus-visible:ring-transparent border-none mt-2"
           placeholder="Write a caption..."
         />
 
-        {/* Hidden Input with Multiple/Video support */}
         <input
           ref={imageRef}
           type="file"
@@ -210,14 +196,14 @@ const CreatePost = ({ open, setOpen }) => {
 
         <Button
           onClick={() => imageRef.current.click()}
-          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf]"
+          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf] text-white"
         >
           Select from computer
         </Button>
 
         {imagePreview.length > 0 && (
           loading ? (
-            <Button disabled>
+            <Button disabled className="w-full">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Please wait
             </Button>
