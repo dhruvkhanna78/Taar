@@ -189,36 +189,83 @@ const Post = ({ post }) => {
       </div>
 
       {/* Image */}
-      {post.image?.length > 0 && (
-        <div className="relative">
-          {/* Slider */}
+      {(post.image?.length > 0 || post.video) && (
+        <div className="relative group">
+          {/* Slider Container */}
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-sm bg-black"
           >
-            {post.image.map((img, index) => (
+            {/* 1. Videos Render (if exists) */}
+            {post.video && (
+              <div className="w-full aspect-square flex-shrink-0 snap-center flex items-center justify-center">
+                <video
+                  src={post.video}
+                  controls
+                  className="w-full h-full object-contain"
+                  loop
+                  muted
+                />
+              </div>
+            )}
+
+            {/* 2. Images Render */}
+            {post.image?.map((img, index) => (
               <img
                 key={index}
                 src={img}
-                alt="post_img"
+                alt="post_media"
                 className="w-full aspect-square object-cover snap-center flex-shrink-0"
               />
             ))}
           </div>
 
-          {/* Dots */}
-          {post.image.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-              {post.image.map((_, index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 w-1.5 rounded-full ${activeIndex === index
-                    ? "bg-white"
-                    : "bg-white/40"
-                    }`}
-                />
-              ))}
+          {/* Dots Indicator (Total items calculate karke) */}
+          {(post.image?.length > 0 || post.video) && (
+            <div className="relative group">
+              {/* Slider Container */}
+              <div
+                ref={sliderRef}
+                onScroll={handleScroll}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-sm bg-black"
+              >
+                {/* 1. Videos Render (if exists) */}
+                {post.video && (
+                  <div className="w-full aspect-square flex-shrink-0 snap-center flex items-center justify-center">
+                    <video
+                      src={post.video}
+                      controls
+                      className="w-full h-full object-contain"
+                      loop
+                      muted
+                    />
+                  </div>
+                )}
+
+                {/* 2. Images Render */}
+                {post.image?.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt="post_media"
+                    className="w-full aspect-square object-cover snap-center flex-shrink-0"
+                  />
+                ))}
+              </div>
+
+              {/* Dots Indicator (Total items calculate karke) */}
+              {((post.image?.length || 0) + (post.video ? 1 : 0)) > 1 && (
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {[...(post.video ? [null] : []), ...post.image].map((_, index) => (
+                    <span
+                      key={index}
+                      className={`h-1.5 w-1.5 rounded-full transition-all ${activeIndex === index ? "bg-white scale-110" : "bg-white/40"
+                        }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
