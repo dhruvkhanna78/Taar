@@ -121,10 +121,11 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-          <div className="relative w-full h-72 overflow-hidden rounded-md bg-black">
+          <div className="relative w-full h-80 overflow-hidden rounded-xl bg-black shadow-md">
 
             {file[currentIndex]?.type.startsWith("image/") ? (
               <>
+                {/* Cropper frame */}
                 <div className="absolute inset-0">
                   <Cropper
                     image={imagePreview[currentIndex]}
@@ -136,7 +137,7 @@ const CreatePost = ({ open, setOpen }) => {
                   />
                 </div>
 
-                {/* zoom slider */}
+                {/* Zoom slider */}
                 <input
                   type="range"
                   min={1}
@@ -144,14 +145,14 @@ const CreatePost = ({ open, setOpen }) => {
                   step={0.1}
                   value={zoom}
                   onChange={(e) => setZoom(Number(e.target.value))}
-                  className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3/4"
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 accent-white opacity-80 hover:opacity-100 transition"
                 />
               </>
             ) : (
               <video
                 src={imagePreview[currentIndex]}
                 controls
-                className="object-cover h-64 w-full rounded-md"
+                className="absolute inset-0 h-full w-full object-cover"
               />
             )}
 
@@ -159,7 +160,7 @@ const CreatePost = ({ open, setOpen }) => {
             {currentIndex > 0 && (
               <button
                 onClick={() => setCurrentIndex(prev => prev - 1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded"
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white px-3 py-1 rounded-full backdrop-blur-sm transition"
               >
                 ◀
               </button>
@@ -169,15 +170,27 @@ const CreatePost = ({ open, setOpen }) => {
             {currentIndex < imagePreview.length - 1 && (
               <button
                 onClick={() => setCurrentIndex(prev => prev + 1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white px-3 py-1 rounded-full backdrop-blur-sm transition"
               >
                 ▶
               </button>
             )}
 
+            {/* Slide indicator dots */}
+            {imagePreview.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {imagePreview.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full transition ${i === currentIndex ? "bg-white" : "bg-white/40"
+                      }`}
+                  />
+                ))}
+              </div>
+            )}
+
           </div>
         )}
-
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
