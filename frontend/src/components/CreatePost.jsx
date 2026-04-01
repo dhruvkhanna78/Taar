@@ -29,6 +29,7 @@ const CreatePost = ({ open, setOpen }) => {
   const dispatch = useDispatch();
   const { posts } = useSelector(store => store.post);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const fileChangeHandler = async (e) => {
     // FIX: e.target.file ko e.target.files kiya aur Array.from lagaya
@@ -116,38 +117,44 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-  <div className="w-full flex flex-col gap-2">
-    {imagePreview.map((src, index) => {
-      if (!src) return null;
+          <div className="relative w-full">
 
-      const fileType = file[index]?.type;
+            {file[currentIndex]?.type.startsWith("image/") ? (
+              <img
+                src={imagePreview[currentIndex]}
+                alt="preview"
+                className="object-cover h-64 w-full rounded-md"
+              />
+            ) : (
+              <video
+                src={imagePreview[currentIndex]}
+                controls
+                className="object-cover h-64 w-full rounded-md"
+              />
+            )}
 
-      if (fileType.startsWith("image/")) {
-        return (
-          <img
-            key={index}
-            src={src}
-            alt="preview"
-            className="object-cover h-64 w-full rounded-md"
-          />
-        );
-      }
+            {/* Prev button */}
+            {currentIndex > 0 && (
+              <button
+                onClick={() => setCurrentIndex(prev => prev - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded"
+              >
+                ◀
+              </button>
+            )}
 
-      if (fileType.startsWith("video/")) {
-        return (
-          <video
-            key={index}
-            src={src}
-            controls
-            className="object-cover h-64 w-full rounded-md"
-          />
-        );
-      }
+            {/* Next button */}
+            {currentIndex < imagePreview.length - 1 && (
+              <button
+                onClick={() => setCurrentIndex(prev => prev + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded"
+              >
+                ▶
+              </button>
+            )}
 
-      return null;
-    })}
-  </div>
-)}
+          </div>
+        )}
 
         <Textarea
           value={caption}

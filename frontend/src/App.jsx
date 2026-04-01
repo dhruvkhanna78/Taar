@@ -9,11 +9,12 @@ import Home from './components/Home.jsx'
 import VerificationPage from './components/VerificationPage.jsx'
 import "./App.css";
 import EditProfile from './components/EditProfile.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 const browserRouter = createBrowserRouter([
   {
     path: '/',
-    element: <MainLayout />,
+    element: <ProtectedRoute><MainLayout /></ProtectedRoute>,
     children: [
       {
         index: true,
