@@ -121,18 +121,20 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-          <div className="relative w-full h-72 flex items-center justify-center overflow-hidden rounded-md bg-black">
+          <div className="relative w-full h-72 overflow-hidden rounded-md bg-black">
 
             {file[currentIndex]?.type.startsWith("image/") ? (
               <>
-                <Cropper
-                  image={imagePreview[currentIndex]}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                />
+                <div className="absolute inset-0">
+                  <Cropper
+                    image={imagePreview[currentIndex]}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                  />
+                </div>
 
                 {/* zoom slider */}
                 <input
