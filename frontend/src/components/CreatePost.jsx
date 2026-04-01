@@ -117,8 +117,7 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-          <div className="relative w-full">
-
+          <div className="relative w-full h-72 flex items-center justify-center overflow-hidden rounded-md">
             {file[currentIndex]?.type.startsWith("image/") ? (
               <img
                 src={imagePreview[currentIndex]}
