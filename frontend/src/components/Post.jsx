@@ -33,12 +33,12 @@ const Post = ({ post }) => {
   }
 
   const handleScroll = () => {
-  const container = sliderRef.current;
-  const scrollLeft = container.scrollLeft;
-  const width = container.offsetWidth;
-  const index = Math.round(scrollLeft / width);
-  setActiveIndex(index);
-};
+    const container = sliderRef.current;
+    const scrollLeft = container.scrollLeft;
+    const width = container.offsetWidth;
+    const index = Math.round(scrollLeft / width);
+    setActiveIndex(index);
+  };
 
   const likeOrDislikeHandler = async () => {
     const action = liked ? "dislike" : "like";
@@ -190,40 +190,39 @@ const Post = ({ post }) => {
 
       {/* Image */}
       {post.image?.length > 0 && (
-  <div className="relative">
-    {/* Slider */}
-    <div
-      ref={sliderRef}
-      onScroll={handleScroll}
-      className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-    >
-      {post.image.map((img, index) => (
-        <img
-          key={index}
-          src={img}
-          alt="post_img"
-          className="w-full aspect-square object-cover snap-center flex-shrink-0"
-        />
-      ))}
-    </div>
+        <div className="relative">
+          {/* Slider */}
+          <div
+            ref={sliderRef}
+            onScroll={handleScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          >
+            {post.image.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt="post_img"
+                className="w-full aspect-square object-cover snap-center flex-shrink-0"
+              />
+            ))}
+          </div>
 
-    {/* Dots */}
-    {post.image.length > 1 && (
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-        {post.image.map((_, index) => (
-          <span
-            key={index}
-            className={`h-1.5 w-1.5 rounded-full ${
-              activeIndex === index
-                ? "bg-white"
-                : "bg-white/40"
-            }`}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-)}
+          {/* Dots */}
+          {post.image.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {post.image.map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-1.5 w-1.5 rounded-full ${activeIndex === index
+                    ? "bg-white"
+                    : "bg-white/40"
+                    }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Actions */}
       <div className='flex justify-between items-center my-2'>
