@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
+import Cropper from "react-easy-crop";
 
 const categories = [
   "Entertainment",
@@ -30,6 +31,8 @@ const CreatePost = ({ open, setOpen }) => {
   const { posts } = useSelector(store => store.post);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
 
   const fileChangeHandler = async (e) => {
     // FIX: e.target.file ko e.target.files kiya aur Array.from lagaya
@@ -117,13 +120,30 @@ const CreatePost = ({ open, setOpen }) => {
 
         {/* Previews Loop */}
         {imagePreview.length > 0 && (
-          <div className="relative w-full h-72 flex items-center justify-center overflow-hidden rounded-md">
+          <div className="relative w-full h-72 flex items-center justify-center overflow-hidden rounded-md bg-black">
+
             {file[currentIndex]?.type.startsWith("image/") ? (
-              <img
-                src={imagePreview[currentIndex]}
-                alt="preview"
-                className="object-cover h-64 w-full rounded-md"
-              />
+              <>
+                <Cropper
+                  image={imagePreview[currentIndex]}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                />
+
+                {/* zoom slider */}
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3/4"
+                />
+              </>
             ) : (
               <video
                 src={imagePreview[currentIndex]}
