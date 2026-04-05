@@ -3,6 +3,7 @@ import { IoSearch } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import useSearchUsers from "@/hooks/useSearchUsers";
 import Post from "./Post";
+import UserCard from "./UserCard";
 
 const SearchPage = () => {
   const [query, setQuery] = useState("");
@@ -44,9 +45,7 @@ const SearchPage = () => {
               <h2 className="font-semibold mb-2">Profiles</h2>
 
               {users.map((user) => (
-                <div key={user._id}>
-                  {user.username}
-                </div>
+                <UserCard key={user._id} user={user} />
               ))}
             </>
           )}
