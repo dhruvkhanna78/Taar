@@ -67,6 +67,8 @@ const LeftSidebar = () => {
       }
     } else if (textType === "Home") {
       navigate("/");
+    } else if (textType === "Search") {
+      navigate("/search");
     }
   };
 
