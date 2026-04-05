@@ -26,7 +26,9 @@ const SearchPage = () => {
           placeholder="Search..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="border border-[#e5eaf2] absolute top-[2px] left-[3px] h-[90%] w-[85%] py-3 px-4 outline-none rounded-full"
+          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
+                       focus:bg-white transition-all duration-300 text-sm shadow-sm"
         />
 
         <IoSearch className="text-[1.3rem] text-white ml-auto" />
