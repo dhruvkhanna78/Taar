@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+
 const useSearchUsers = (query) => {
   const dispatch = useDispatch();
 
@@ -16,3 +19,5 @@ const useSearchUsers = (query) => {
     fetchUsers();
   }, [query]);
 };
+
+export default useSearchUsers;
