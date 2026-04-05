@@ -439,3 +439,30 @@ export const followOrUnfollow = async (req, res) => {
     console.log(error);
   }
 };
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        users: [],
+      });
+    }
+
+    const users = await User.find({
+      username: { $regex: q, $options: "i" },
+    }).select("-password");
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      users: [],
+    });
+  }
+};

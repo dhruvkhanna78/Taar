@@ -8,6 +8,7 @@ import {
   logout,
   register,
   resendOTP,
+  searchUsers,
   verifyOtp,
 } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
@@ -23,5 +24,6 @@ router.route("/suggested").get(isAuthenticated, getSuggestedUsers);
 router.route("/followorunfollow/:id").post(isAuthenticated, followOrUnfollow);
 router.route("/send-otp").post(resendOTP);
 router.route("/verify-otp").post(verifyOtp);
+router.route("/search").get(searchUsers)
 
 export default router;
