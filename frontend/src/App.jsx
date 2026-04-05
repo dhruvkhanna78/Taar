@@ -10,6 +10,7 @@ import VerificationPage from './components/VerificationPage.jsx'
 import "./App.css";
 import EditProfile from './components/EditProfile.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import SearchPage from './components/SearchPage.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const browserRouter = createBrowserRouter([
       {
         path: "profile/:id",
         element: <Profile />
+      },
+      {
+        path: "search",
+        element: <SearchPage />
       }
     ]
   },
