@@ -17,7 +17,7 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="mx-10 my-10 max-w-md"> {/* Container width control karne ke liye */}
+    <div className="mx-10 my-10 max-w"> {/* Container width control karne ke liye */}
       <div className="relative flex items-center group">
         {/* Search Icon - Left side par fixed */}
         <IoSearch className="absolute left-3 text-gray-400 group-focus-within:text-blue-500 transition-colors text-[1.2rem]" />
