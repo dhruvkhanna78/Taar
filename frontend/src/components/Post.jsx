@@ -11,6 +11,7 @@ import axios from 'axios';
 import { setPosts } from '@/redux/postSlice';
 
 const Post = ({ post }) => {
+
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef(null);
   const [text, setText] = useState("");
@@ -23,6 +24,7 @@ const Post = ({ post }) => {
   const [postLike, setPostLike] = useState(post.likes.length || 0);
   const [comments, setComments] = useState(post.comments || []);
   const [animateLike, setAnimateLike] = useState(false);
+  const isFollowing = user?.following?.includes(post.author?._id);
 
   const dispatch = useDispatch();
 
@@ -68,11 +70,11 @@ const Post = ({ post }) => {
         const updatedPosts = posts.map(p =>
           p._id === post._id
             ? {
-                ...p,
-                likes: liked
-                  ? p.likes.filter(id => id !== user?._id)
-                  : [...p.likes, user?._id],
-              }
+              ...p,
+              likes: liked
+                ? p.likes.filter(id => id !== user?._id)
+                : [...p.likes, user?._id],
+            }
             : p
         );
         dispatch(setPosts(updatedPosts));
@@ -82,6 +84,28 @@ const Post = ({ post }) => {
       setLiked(prevLiked);
       setPostLike(prevPostLike);
       toast.error("Failed to update like");
+    }
+  };
+
+  const followHandler = async () => {
+    try {
+      dispatch({
+        type: "auth/setAuthUser",
+        payload: {
+          ...user,
+          following: isFollowing
+            ? user.following.filter(id => id !== post.author._id)
+            : [...user.following, post.author._id],
+        },
+      });
+
+      await axios.post(
+        `https://taar-server.onrender.com/api/v1/user/followorunfollow/${post.author._id}`,
+        {},
+        { withCredentials: true }
+      );
+    } catch (err) {
+      toast.error("Action failed");
     }
   };
 
@@ -97,7 +121,7 @@ const Post = ({ post }) => {
       if (res.data.success) {
         const updatedComments = [...comments, res.data.comment];
         setComments(updatedComments);
-        
+
         const updatedPostData = posts.map(p =>
           p._id === post._id ? { ...p, comments: updatedComments } : p
         );
@@ -140,6 +164,25 @@ const Post = ({ post }) => {
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <h1 className='font-bold text-sm select-text'>{post.author?.username}</h1>
+          {user._id !== post.author?._id && (
+            !isFollowing ? (
+              <Button
+                onClick={followHandler}
+                variant="ghost"
+                className="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold ml-5 active:scale-95 transition-transform"
+              >
+                Follow
+              </Button>
+            ) : (
+              <Button
+                onClick={followHandler}
+                variant="ghost"
+                className="bg-black/20 text-gray px-3 py-1 rounded text-xs font-semibold ml-5 active:scale-95 transition-transform"
+              >
+                Unfollow
+              </Button>
+            )
+          )}
         </div>
 
         <Dialog>
@@ -148,7 +191,13 @@ const Post = ({ post }) => {
           </DialogTrigger>
           <DialogContent className='flex flex-col items-center text-sm text-center'>
             {user._id !== post.author?._id && (
-              <Button variant='ghost' className='w-full text-[#ED4596] font-bold'>Unfollow</Button>
+              <Button
+                onClick={followHandler}
+                variant="ghost"
+                className="w-full text-[#ED4596] font-bold"
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Button>
             )}
             <Button variant='ghost' className='w-full'>Add to favourites</Button>
             {user._id === post.author?._id && (
@@ -182,9 +231,8 @@ const Post = ({ post }) => {
               {mediaItems.map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-1.5 w-1.5 rounded-full transition-all ${
-                    activeIndex === idx ? "bg-white scale-110" : "bg-white/50"
-                  }`}
+                  className={`h-1.5 w-1.5 rounded-full transition-all ${activeIndex === idx ? "bg-white scale-110" : "bg-white/50"
+                    }`}
                 />
               ))}
             </div>
@@ -195,8 +243,8 @@ const Post = ({ post }) => {
       {/* Actions */}
       <div className='flex justify-between items-center mt-3'>
         <div className='flex items-center gap-4'>
-          <div 
-            onClick={likeOrDislikeHandler} 
+          <div
+            onClick={likeOrDislikeHandler}
             className={`cursor-pointer transition-transform active:scale-90 ${animateLike ? 'scale-125' : ''}`}
           >
             {liked ? <FaHeart className='text-red-500' size={22} /> : <FaRegHeart size={22} />}

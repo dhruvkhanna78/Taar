@@ -50,6 +50,45 @@ const Profile = () => {
     );
   }
 
+  const handleFollow = async () => {
+    try {
+      const followers = userProfile.followers || [];
+      const following = user.following || [];
+
+      const updatedFollowers = isFollowing
+        ? followers.filter(id => id !== user._id)
+        : [...followers, user._id];
+
+      const updatedFollowing = isFollowing
+        ? following.filter(id => id !== userProfile._id)
+        : [...following, userProfile._id];
+
+      // update profile followers instantly
+      dispatch(
+        setUserProfile({
+          ...userProfile,
+          followers: updatedFollowers,
+        })
+      );
+
+      // update logged-in user following instantly
+      dispatch({
+        type: "auth/setAuthUser",
+        payload: {
+          ...user,
+          following: updatedFollowing,
+        },
+      });
+
+      await axios.post(
+        `https://taar-server.onrender.com/api/v1/user/followorunfollow/${userProfile._id}`,
+        {},
+        { withCredentials: true }
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return (
     <div className="flex-1 p-4 md:p-10">
       <div className="max-w-4xl mx-auto">
@@ -80,10 +119,20 @@ const Profile = () => {
                   {userProfile.username}
                 </span>
 
-                {isLoggedInUserProfile && (
+                {isLoggedInUserProfile ? (
                   <Link to="/profile/edit">
                     <Button variant="secondary">Edit profile</Button>
                   </Link>
+                ) : (
+                  <Button
+                    onClick={handleFollow}
+                    className={`px-4 py-1 text-sm font-semibold ${isFollowing
+                      ? "bg-gray-200 text-black"
+                      : "bg-blue-500 text-white"
+                      }`}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </Button>
                 )}
               </div>
 
@@ -133,8 +182,8 @@ const Profile = () => {
 
             <span
               className={`py-4 cursor-pointer border-t ${activeTab === "posts"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-400"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400"
                 }`}
               onClick={() => handleTabChange("posts")}
             >
@@ -143,8 +192,8 @@ const Profile = () => {
 
             <span
               className={`py-4 cursor-pointer border-t ${activeTab === "saved"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-400"
+                ? "border-black text-black"
+                : "border-transparent text-gray-400"
                 }`}
               onClick={() => handleTabChange("saved")}
             >
