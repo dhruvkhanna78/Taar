@@ -35,7 +35,7 @@ const Signup = () => {
       localStorage.setItem("otpEmail", input.email);
       toast.success(res.data.message);
       setInput({ email: '', username: '', password: '' });
-      navigate('/verify-otp'); // Yahan redirect kar diya
+      navigate('/verify-otp', { state: { email: input.email } }); // Yahan redirect kar diya
     }
   } catch (err) {
     // Axios error handling improvement

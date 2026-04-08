@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setAuthUser } from '@/redux/authSlice';
@@ -12,11 +12,9 @@ const VerificationPage = () => {
     const location = useLocation();
     const dispatch = useDispatch();
 
-    const email =
-        location.state?.email ||
-        localStorage.getItem("otpEmail");
+    const email = location.state?.email;
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!email) {
             toast.error("Session expired. Please signup again.");
             navigate("/signup");
@@ -54,6 +52,20 @@ const VerificationPage = () => {
         }
     };
 
+    const resendOTP = async () => {
+        try {
+            const res = await axios.post(
+                "https://taar-server.onrender.com/api/v1/user/resend-otp",
+                { email }
+            );
+
+            toast.success(res.data.message);
+        } catch {
+            toast.error("Failed to resend OTP");
+        }
+    };
+
+    console.log("VERIFY PAGE EMAIL:", email);
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <div className="p-8 bg-white shadow-lg rounded-lg w-full max-w-md">
@@ -81,6 +93,14 @@ const VerificationPage = () => {
                         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded transition-all"
                     >
                         Verify & Login
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={resendOTP}
+                        className="text-blue-500 underline text-sm"
+                    >
+                        Resend OTP
                     </button>
                 </form>
             </div>
