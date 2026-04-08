@@ -6,7 +6,7 @@ const Posts = () => {
   const { posts } = useSelector(store => store.post);
   return (
     // Max width set ki hai taaki posts desktop par bahut zyada fail na jayein
-    <div className='max-w-md mx-auto px-2 md:px-0'>
+    <div className="w-full max-w-xl mx-auto">
       {
         posts.map((post) => <Post key={post._id} post={post}/>)
       }

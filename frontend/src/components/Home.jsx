@@ -1,24 +1,28 @@
-import React from 'react'
-import Feed from './Feed'
-import { Outlet } from 'react-router-dom'
-import RightSideBar from './RightSideBar'
-import useGetAllPost from '../hooks/useGetAllPost'
+import React from "react";
+import Feed from "./Feed";
+import { Outlet } from "react-router-dom";
+import RightSideBar from "./RightSideBar";
+import useGetAllPost from "../hooks/useGetAllPost";
 
 const Home = () => {
   useGetAllPost();
+
   return (
-    // min-h-screen add kiya taaki background consistent rahe
-    <div className='flex flex-col md:flex-row min-h-screen bg-gray-50'>
-      <div className="flex-grow w-full">
+    <div className="w-full min-h-screen bg-gray-50 flex">
+
+      {/* Feed */}
+      <div className="w-full lg:max-w-2xl lg:mx-auto">
         <Feed />
         <Outlet />
       </div>
-      {/* Desktop par hi RightSideBar dikhega, mobile par hide kar diya hai standard social media ki tarah */}
-      <div className='hidden lg:block w-[30%] border-l border-gray-200'>
+
+      {/* Sidebar (desktop only) */}
+      <div className="hidden lg:block w-[320px] border-l border-gray-200">
         <RightSideBar />
       </div>
-    </div>
-  )
-}
 
-export default Home
+    </div>
+  );
+};
+
+export default Home;
