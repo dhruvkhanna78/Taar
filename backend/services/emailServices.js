@@ -21,10 +21,9 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  // service: "gmail",
   host: "smtp.elasticemail.com",
   port: 2525,
-  // secure: false,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -32,19 +31,14 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendOTPEmail = async (email, otp) => {
-    console.log("📨 Sending OTP to:", email);
-  try {
-    const info = await transporter.sendMail({
-      from: `"Taar" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your OTP",
-      text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
-    });
+  console.log("📨 Sending OTP to:", email);
 
-    console.log("Email sent: " + info.response);
-  } catch (error) {
-    console.log(error);
-    throw new Error("Email sending failed");
-  }
+  const info = await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your OTP",
+    text: `Your OTP is ${otp}`,
+  });
+
+  console.log("Email sent:", info.response);
 };
-
