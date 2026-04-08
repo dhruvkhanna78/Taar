@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import React, { useRef, useState, useCallback } from 'react'
 import { Avatar } from './ui/avatar';
 import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
@@ -22,20 +22,15 @@ const categories = [
   "Art & Literature",
 ];
 
-// Helper function to process cropping
 const getCroppedImg = async (imageSrc, pixelCrop) => {
   if (!pixelCrop) return null;
-
   const image = new Image();
   image.src = imageSrc;
   await new Promise(resolve => image.onload = resolve);
-
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
-
   ctx.drawImage(
     image,
     pixelCrop.x,
@@ -47,7 +42,6 @@ const getCroppedImg = async (imageSrc, pixelCrop) => {
     pixelCrop.width,
     pixelCrop.height
   );
-
   return new Promise(resolve => {
     canvas.toBlob(blob => resolve(blob), "image/jpeg");
   });
@@ -78,7 +72,6 @@ const CreatePost = ({ open, setOpen }) => {
   const fileChangeHandler = async (e) => {
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     if (!selectedFiles.length) return;
-
     setFile(selectedFiles);
     const previews = await Promise.all(
       selectedFiles.map(f => readFileAsDataURL(f))
@@ -121,7 +114,6 @@ const CreatePost = ({ open, setOpen }) => {
         dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message || "Post created successfully");
         setOpen(false);
-        // Reset States
         setFile([]);
         setImagePreview([]);
         setCaption("");
@@ -143,135 +135,149 @@ const CreatePost = ({ open, setOpen }) => {
           setFile([]);
           setCaption("");
         }} 
-        className="sm:max-h-[90vh] overflow-y-auto space-y-3"
+        className="sm:max-w-[450px] max-h-[90vh] p-0 flex flex-col overflow-hidden"
       >
-        <DialogHeader className="text-center font-semibold">
-          Create New Post
+        {/* Fixed Header */}
+        <DialogHeader className="p-4 border-b shrink-0">
+          <DialogTitle className="text-center text-sm font-bold">Create New Post</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-center gap-4">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={user?.profilePicture} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+          {/* User Profile Info */}
+          <div className="flex items-center gap-3">
+            <Avatar className="w-9 h-9">
+              <AvatarImage src={user?.profilePicture} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="font-semibold text-xs">{user?.username}</h1>
+              <p className="text-gray-500 text-[10px] line-clamp-1">{user?.bio}</p>
+            </div>
+          </div>
+
+          {/* Category Section */}
           <div>
-            <h1 className="font-semibold text-xs">{user?.username}</h1>
-            <span className="text-gray-600 text-xs">{user?.bio}</span>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-tight mb-2">Category</p>
+            <div className="flex gap-2 flex-wrap">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all ${
+                    selectedCategory === cat 
+                    ? "bg-black text-white border-black" 
+                    : "bg-white text-gray-600 border-gray-200 hover:border-black"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-2">
-          <div className="font-medium mb-2 text-sm">Select Category</div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map(cat => (
-              <Button
-                key={cat}
-                variant="outline"
-                className={`text-xs h-8 rounded-full ${
-                  selectedCategory === cat ? "bg-black text-white hover:bg-black" : "text-black"
-                }`}
-                onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
-              >
-                {cat}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {imagePreview.length > 0 && (
-          <div className="relative w-full h-80 overflow-hidden rounded-md bg-black">
-            {file[currentIndex]?.type.startsWith("image/") ? (
-              <div className="relative w-full h-full">
-                <Cropper
-                  image={imagePreview[currentIndex]}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={onCropComplete}
-                />
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 z-10 px-4 py-2 bg-black/40 rounded-full">
-                  <input
-                    type="range"
-                    min={1}
-                    max={3}
-                    step={0.1}
-                    value={zoom}
-                    onChange={(e) => setZoom(Number(e.target.value))}
-                    className="w-full h-1 cursor-pointer"
+          {/* Media Preview / Cropper */}
+          {imagePreview.length > 0 && (
+            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
+              {file[currentIndex]?.type.startsWith("image/") ? (
+                <div className="relative w-full h-full">
+                  <Cropper
+                    image={imagePreview[currentIndex]}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
                   />
+                  {/* Zoom Slider Overlay */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 z-10 px-4 py-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm">
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      value={zoom}
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                      className="w-full h-1 accent-black cursor-pointer"
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <video
-                src={imagePreview[currentIndex]}
-                controls
-                className="object-contain h-full w-full"
-              />
-            )}
+              ) : (
+                <video
+                  src={imagePreview[currentIndex]}
+                  controls
+                  className="object-contain h-full w-full"
+                />
+              )}
 
-            {currentIndex > 0 && (
-              <button
-                type="button"
-                onClick={() => setCurrentIndex(prev => prev - 1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-              >
-                ◀
-              </button>
-            )}
+              {/* Navigation Buttons */}
+              {currentIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentIndex(prev => prev - 1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 shadow-md p-1.5 rounded-full z-20 hover:bg-white"
+                >
+                  <span className="text-xs">◀</span>
+                </button>
+              )}
+              {currentIndex < imagePreview.length - 1 && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentIndex(prev => prev + 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 shadow-md p-1.5 rounded-full z-20 hover:bg-white"
+                >
+                  <span className="text-xs">▶</span>
+                </button>
+              )}
+            </div>
+          )}
 
-            {currentIndex < imagePreview.length - 1 && (
-              <button
-                type="button"
-                onClick={() => setCurrentIndex(prev => prev + 1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-              >
-                ▶
-              </button>
-            )}
-          </div>
-        )}
+          {/* Caption Area */}
+          <Textarea
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            className="focus-visible:ring-0 border-none p-0 min-h-[80px] text-sm resize-none"
+            placeholder="What's on your mind?..."
+          />
+          
+          <input
+            ref={imageRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={fileChangeHandler}
+          />
+        </div>
 
-        <Textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          className="focus-visible:ring-transparent border-none mt-2"
-          placeholder="Write a caption..."
-        />
-
-        <input
-          ref={imageRef}
-          type="file"
-          accept="image/*,video/*"
-          multiple
-          className="hidden"
-          onChange={fileChangeHandler}
-        />
-
-        <Button
-          onClick={() => imageRef.current.click()}
-          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf] text-white"
-        >
-          Select from computer
-        </Button>
-
-        {imagePreview.length > 0 && (
+        {/* Sticky Footer */}
+        <div className="p-4 border-t bg-gray-50/50 flex flex-col gap-2 shrink-0">
           <Button
-            onClick={createPostHandler}
-            disabled={loading}
-            className="w-full hover:text-gray-500"
+            onClick={() => imageRef.current.click()}
+            variant="outline"
+            className="w-full text-xs font-semibold h-10 border-dashed border-2 hover:bg-white"
           >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              "Post"
-            )}
+            {imagePreview.length > 0 ? "Change Selection" : "Select from computer"}
           </Button>
-        )}
+
+          {imagePreview.length > 0 && (
+            <Button
+              onClick={createPostHandler}
+              disabled={loading}
+              className="w-full h-10 bg-black text-white hover:bg-gray-800 transition-colors font-bold"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Posting...
+                </span>
+              ) : (
+                "Share Post"
+              )}
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
