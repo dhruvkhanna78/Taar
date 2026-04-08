@@ -3,12 +3,12 @@ import Post from './Post'
 import { useSelector } from 'react-redux'
 
 const Posts = () => {
-  const {posts} = useSelector(store=>store.post);
+  const { posts } = useSelector(store => store.post);
   return (
-    <div>
+    // Max width set ki hai taaki posts desktop par bahut zyada fail na jayein
+    <div className='max-w-md mx-auto px-2 md:px-0'>
       {
-      // [1,2,3,4].map((item,index) => <Post key={index}/>)
-      posts.map((post) => <Post key={post._id} post={post}/>)
+        posts.map((post) => <Post key={post._id} post={post}/>)
       }
     </div>
   )

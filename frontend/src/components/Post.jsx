@@ -11,7 +11,6 @@ import axios from 'axios';
 import { setPosts } from '@/redux/postSlice';
 
 const Post = ({ post, theme }) => {
-
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef(null);
   const [text, setText] = useState("");
@@ -19,7 +18,6 @@ const Post = ({ post, theme }) => {
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
 
-  // Local states for instant UI feedback
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length || 0);
   const [comments, setComments] = useState(post.comments || []);
@@ -28,7 +26,6 @@ const Post = ({ post, theme }) => {
 
   const dispatch = useDispatch();
 
-  // Sync internal state when post prop changes
   useEffect(() => {
     setLiked(post.likes.includes(user?._id));
     setPostLike(post.likes.length);
@@ -54,7 +51,6 @@ const Post = ({ post, theme }) => {
     setAnimateLike(true);
     setTimeout(() => setAnimateLike(false), 300);
 
-    // Optimistic UI Update
     const prevLiked = liked;
     const prevPostLike = postLike;
     setLiked(!liked);
@@ -80,7 +76,6 @@ const Post = ({ post, theme }) => {
         dispatch(setPosts(updatedPosts));
       }
     } catch (error) {
-      // Rollback on error
       setLiked(prevLiked);
       setPostLike(prevPostLike);
       toast.error("Failed to update like");
@@ -121,7 +116,6 @@ const Post = ({ post, theme }) => {
       if (res.data.success) {
         const updatedComments = [...comments, res.data.comment];
         setComments(updatedComments);
-
         const updatedPostData = posts.map(p =>
           p._id === post._id ? { ...p, comments: updatedComments } : p
         );
@@ -149,61 +143,44 @@ const Post = ({ post, theme }) => {
     }
   };
 
-  // Logic for media count
   const mediaItems = [];
   if (post.video) mediaItems.push({ type: 'video', url: post.video });
   if (post.image) post.image.forEach(img => mediaItems.push({ type: 'image', url: img }));
 
   return (
-    <div
-      className={`select-none my-8 w-full max-w-sm mx-auto pb-4 rounded-xl transition`}
-    >
+    <div className="select-none my-6 w-full max-w-md mx-auto pb-4 bg-white border-b border-gray-100 md:rounded-xl md:border md:shadow-sm transition-all duration-300">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
-          <Avatar className="w-8 h-8">
+          <Avatar className="w-8 h-8 border">
             <AvatarImage src={post.author?.profilePicture} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <h1 className='font-bold text-sm select-text'>{post.author?.username}</h1>
           {user._id !== post.author?._id && (
-            !isFollowing ? (
-              <Button
-                onClick={followHandler}
-                variant="ghost"
-                className="bg-blue-500 text-white px-3 py-1 rounded text-xs font-semibold ml-5 active:scale-95 transition-transform"
-              >
-                Follow
-              </Button>
-            ) : (
-              <Button
-                onClick={followHandler}
-                variant="ghost"
-                className="bg-black/20 text-gray px-3 py-1 rounded text-xs font-semibold ml-5 active:scale-95 transition-transform"
-              >
-                Unfollow
-              </Button>
-            )
+            <Button
+              onClick={followHandler}
+              variant="ghost"
+              className={`px-3 py-1 h-7 rounded-full text-xs font-bold ml-2 transition-all ${isFollowing ? 'bg-gray-100 text-black' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
+            </Button>
           )}
         </div>
 
         <Dialog>
           <DialogTrigger asChild>
-            <MoreHorizontal className='cursor-pointer' />
+            <MoreHorizontal className='cursor-pointer text-gray-500 hover:text-black transition' />
           </DialogTrigger>
-          <DialogContent className='flex flex-col items-center text-sm text-center'>
+          <DialogContent className='flex flex-col items-center text-sm text-center p-4 rounded-xl'>
             {user._id !== post.author?._id && (
-              <Button
-                onClick={followHandler}
-                variant="ghost"
-                className="w-full text-[#ED4596] font-bold"
-              >
+              <Button onClick={followHandler} variant="ghost" className="w-full text-[#ED4596] font-bold">
                 {isFollowing ? "Unfollow" : "Follow"}
               </Button>
             )}
             <Button variant='ghost' className='w-full'>Add to favourites</Button>
             {user._id === post.author?._id && (
-              <Button onClick={deletePostHandler} variant='ghost' className='w-full text-red-500'>Delete</Button>
+              <Button onClick={deletePostHandler} variant='ghost' className='w-full text-red-500 font-bold'>Delete</Button>
             )}
           </DialogContent>
         </Dialog>
@@ -211,19 +188,19 @@ const Post = ({ post, theme }) => {
 
       {/* Media Slider */}
       {mediaItems.length > 0 && (
-        <div className="relative group">
+        <div className="relative aspect-square w-full bg-black overflow-hidden md:rounded-lg">
           {theme?.icon && (
-            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-md p-1 rounded-full shadow">
+            <div className="absolute top-3 right-3 z-10 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-sm">
               <theme.icon className={`w-4 h-4 ${theme.accent}`} />
             </div>
           )}
           <div
             ref={sliderRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded bg-black aspect-square items-center"
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide w-full h-full items-center"
           >
             {mediaItems.map((item, idx) => (
-              <div key={idx} className="w-full h-full flex-shrink-0 snap-center">
+              <div key={idx} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
                 {item.type === 'video' ? (
                   <video src={item.url} controls className="w-full h-full object-contain" />
                 ) : (
@@ -234,13 +211,9 @@ const Post = ({ post, theme }) => {
           </div>
 
           {mediaItems.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
               {mediaItems.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-1.5 w-1.5 rounded-full transition-all ${activeIndex === idx ? "bg-white scale-110" : "bg-white/50"
-                    }`}
-                />
+                <div key={idx} className={`h-1.5 w-1.5 rounded-full transition-all ${activeIndex === idx ? "bg-white scale-125" : "bg-white/40"}`} />
               ))}
             </div>
           )}
@@ -248,66 +221,58 @@ const Post = ({ post, theme }) => {
       )}
 
       {/* Actions Section */}
-      <div className='flex justify-between items-center mt-3'>
-        <div className='flex items-center gap-4'>
-          <div
-            onClick={likeOrDislikeHandler}
-            className={`cursor-pointer transition-transform active:scale-90 ${animateLike ? 'scale-125' : ''}`}
-          >
-            {liked ? (
-              // Agar like hai toh theme ka accent color use hoga (e.g., Purple for Entertainment)
-              <FaHeart className={`${theme?.accent || 'text-red-500'}`} size={22} />
-            ) : (
-              // Border waala heart bhi thoda theme ke hisaab se subtle dikh sakta hai
-              <FaRegHeart className="text-gray-600" size={22} />
-            )}
+      <div className="px-3">
+        <div className='flex justify-between items-center mt-3'>
+          <div className='flex items-center gap-4'>
+            <div onClick={likeOrDislikeHandler} className={`cursor-pointer transition-transform active:scale-90 ${animateLike ? 'scale-125' : ''}`}>
+              {liked ? <FaHeart className={`${theme?.accent || 'text-red-500'}`} size={24} /> : <FaRegHeart className="text-gray-700" size={24} />}
+            </div>
+            <MessageCircle onClick={() => setOpened(true)} className='cursor-pointer text-gray-700 hover:text-black transition' size={24} />
+            <Send className='cursor-pointer text-gray-700 hover:text-black transition' size={24} />
           </div>
-
-          {/* Message aur Send icon ko bhi theme touch de sakte hain */}
-          <MessageCircle
-            onClick={() => setOpened(true)}
-            className={`cursor-pointer text-gray-600`}
-            size={22}
-          />
-          <Send
-            className="cursor-pointer text-gray-600"
-            size={22}
-          />
+          <Bookmark className='cursor-pointer text-gray-700 hover:text-black transition' size={24} />
         </div>
-        <Bookmark className="cursor-pointer text-gray-600" size={22} />
-      </div>
 
-      {/* Comment Input Section (Post Button color change) */}
-      <div className='flex items-center justify-between mt-2 border-t pt-2 border-gray-100/20'>
-        <input
-          type="text"
-          placeholder='Add a comment...'
-          value={text}
-          onChange={changeEventHAndler}
-          className='outline-none text-sm w-full bg-transparent placeholder:opacity-50'
-        />
-        {text.trim() && (
-          <button
-            onClick={commentHandler}
-            className={`font-semibold text-sm ml-2 ${theme?.accent || 'text-[#3BADF8]'}`}
-          >
-            Post
-          </button>
-        )}
-      </div>
+        {/* Post Info */}
+        <div className='mt-2'>
+          <span className='font-bold text-sm block'>{postLike.toLocaleString()} likes</span>
+          <p className='text-sm mt-1 leading-snug'>
+            <span className='font-bold mr-2'>{post.author?.username}</span>
+            <span className='select-text text-gray-800'>{post.caption}</span>
+          </p>
+          {comments.length > 0 && (
+            <button onClick={() => setOpened(true)} className='text-gray-500 text-sm font-medium mt-1 block hover:underline'>
+              View all {comments.length} comments
+            </button>
+          )}
+        </div>
 
-      {/* Post Info */}
-      <div className='mt-2'>
-        <span className='font-bold text-sm block'>{postLike} likes</span>
-        <p className='text-sm mt-1'>
-          <span className='font-bold mr-2'>{post.author?.username}</span>
-          <span className='select-text'>{post.caption}</span>
-        </p>
+        {/* Smallest Comment Preview */}
         {comments.length > 0 && (
-          <span onClick={() => setOpened(true)} className='text-gray-500 text-sm cursor-pointer mt-1 block'>
-            View all {comments.length} comments
-          </span>
+          <div className="text-sm mt-1 flex gap-2">
+            <span className="font-bold">{comments[0].author?.username}</span>
+            <span className="text-gray-700 truncate">{comments[0].text}</span>
+          </div>
         )}
+
+        {/* Inline Comment Input - Hidden on very small screens or optimized for focus */}
+        <div className='flex items-center justify-between mt-3 border-t border-gray-50 pt-3'>
+          <input
+            type="text"
+            placeholder='Add a comment...'
+            value={text}
+            onChange={changeEventHAndler}
+            className='outline-none text-sm w-full bg-transparent placeholder:text-gray-400'
+          />
+          {text.trim() && (
+            <button 
+              onClick={commentHandler} 
+              className={`font-bold text-sm ml-2 transition-colors ${theme?.accent || 'text-blue-500'}`}
+            >
+              Post
+            </button>
+          )}
+        </div>
       </div>
 
       <CommentDialog
@@ -318,31 +283,6 @@ const Post = ({ post, theme }) => {
         text={text}
         setText={setText}
       />
-
-      {comments.length > 0 && (
-        <div className="text-sm mt-1">
-          <span className="font-bold mr-2">
-            {comments[0].author?.username}
-          </span>
-          {comments[0].text}
-        </div>
-      )}
-
-      {/* Comment Input */}
-      <div className='flex items-center justify-between mt-2 border-t pt-2'>
-        <input
-          type="text"
-          placeholder='Add a comment...'
-          value={text}
-          onChange={changeEventHAndler}
-          className='outline-none text-sm w-full bg-transparent'
-        />
-        {text.trim() && (
-          <button onClick={commentHandler} className='text-[#3BADF8] font-semibold text-sm ml-2'>
-            Post
-          </button>
-        )}
-      </div>
     </div>
   );
 };
