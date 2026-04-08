@@ -5,8 +5,8 @@ import { useSelector } from 'react-redux'
 const Posts = () => {
   const { posts } = useSelector(store => store.post);
   return (
-    // Max width set ki hai taaki posts desktop par bahut zyada fail na jayein
-    <div className="w-full max-w-xl mx-auto">
+    // Mobile par w-full (zero margins), tablet/desktop par centering
+    <div className="w-full sm:max-w-xl sm:mx-auto">
       {
         posts.map((post) => <Post key={post._id} post={post}/>)
       }

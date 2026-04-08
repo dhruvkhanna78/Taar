@@ -3,7 +3,8 @@ import Posts from "./Posts";
 
 const Feed = () => {
   return (
-    <div className="w-full px-2 sm:px-4 md:px-0">
+    // Mobile par padding bilkul zero (px-0) honi chahiye
+    <div className="w-full px-0 md:px-0">
       <Posts />
     </div>
   );
