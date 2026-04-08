@@ -11,6 +11,7 @@ import "./App.css";
 import EditProfile from './components/EditProfile.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SearchPage from './components/SearchPage.jsx'
+import CategoryPage from './components/CategoryPage.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const browserRouter = createBrowserRouter([
       {
         path: "search",
         element: <SearchPage />
+      },
+      {
+        path: "/category/:type",
+        element: <CategoryPage />
       }
     ]
   },

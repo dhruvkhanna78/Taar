@@ -1,76 +1,184 @@
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import React from 'react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { AvatarImage } from '@radix-ui/react-avatar'
-import { Link } from 'react-router-dom'
-import { DialogTrigger } from '@radix-ui/react-dialog'
-import { MoreHorizontal } from 'lucide-react'
-import { Button } from './ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from './ui/button';
+import { MoreHorizontal } from 'lucide-react';
 
-const CommentDialog = ({ open, setOpen }) => {
-    const [text, setText] = React.useState("");
-    const changeEventHAndler = (e) => {
-        const inputText = e.target.value;
-        if(inputText.trim()){
-            setText(inputText);
-        } else{
-            setText("");
+const CommentDialog = ({ open, setOpen, commentHandler, text, setText, post }) => {
+
+    const changeEventHandler = (e) => {
+        setText(e.target.value);
+    };
+
+    const formatTimeAgo = (timestamp) => {
+        if (!timestamp) return "now";
+
+        const diff = Date.now() - new Date(timestamp).getTime();
+
+        if (isNaN(diff)) return "now";
+
+        const seconds = Math.floor(diff / 1000);
+
+        const intervals = [
+            { label: "y", seconds: 31536000 },
+            { label: "mo", seconds: 2592000 },
+            { label: "w", seconds: 604800 },
+            { label: "d", seconds: 86400 },
+            { label: "h", seconds: 3600 },
+            { label: "m", seconds: 60 },
+        ];
+
+        for (let i of intervals) {
+            const count = Math.floor(seconds / i.seconds);
+            if (count >= 1) return `${count}${i.label}`;
         }
-    }
 
-    const sendMessageHandler = async () => {
-        alert("Message sent: " + text);
-    }
+        return "now";
+    };
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className='max-w-none  w-[90vw] p-0 flex flex-col h-auto'>
-                <div className='flex gap-4 pr-2'>
-                    <div className='select-none w-full md:w-1/3 hidden md:block'>
-                        <img src="https://cdn.pixabay.com/photo/2025/08/17/10/46/bird-9779577_1280.png" alt="post_img" className='w-full h-full object-cover rounded-l-lg' />
-                    </div>
-                    <div className='w-full md:w-2/3 flex flex-col justify-between'>
-                        <div className='flex items-center justify-between caret-transparent '>
-                            <div className='flex items-center gap-2 py-4 pl-0'>
-                                <Link>
-                                    <Avatar className='select-none'>
-                                        <AvatarImage src='' alt='post_image' />
-                                        <AvatarFallback>CN</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                                <div>
-                                    <Link className='font-semibold text-xs select-text' >Username</Link>
-                                    {/* <span className='text-gray-600 text-sm'>Bio here...</span> */}
-                                </div>
+            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 flex flex-row overflow-hidden border-none shadow-2xl bg-white">
+
+                {/* LEFT MEDIA */}
+                <div className="hidden md:flex w-[45%] bg-black items-center justify-center border-r border-gray-100">
+                    {post?.image?.length > 0 ? (
+                        <img
+                            src={post.image[0]}
+                            alt="preview"
+                            className="w-full h-full object-contain"
+                        />
+                    ) : post?.video ? (
+                        <video
+                            src={post.video}
+                            controls
+                            className="w-full h-full object-contain"
+                        />
+                    ) : (
+                        <div className="text-gray-500">No Media Available</div>
+                    )}
+                </div>
+
+                {/* RIGHT PANEL */}
+                <div className="w-full md:w-[55%] flex flex-col h-full bg-white">
+
+                    {/* HEADER */}
+                    <div className="flex items-center justify-between p-4 border-b shrink-0">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="w-10 h-10 border">
+                                <AvatarImage src={post?.author?.profilePicture} />
+                                <AvatarFallback>
+                                    {post?.author?.username?.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex flex-col">
+                                <span className="font-bold text-sm leading-none">
+                                    {post?.author?.username}
+                                </span>
+                                <span className="text-[12px] text-gray-500 mt-1">
+                                    Original Post
+                                </span>
                             </div>
-                            <Dialog >
-                                <DialogTrigger asChild className='cursor-pointer item-center flex flex-col text-sm text-center caret-transparent select-none'>
-                                    <MoreHorizontal className='cursor-pointer' />
-                                </DialogTrigger>
-                                <DialogContent className='cursor-pointer w-xs item-center flex flex-col text-sm text-center caret-transparent select-none'>
-                                    <div className='font-bold text-red-500'>
-                                        Unfollow
-                                    </div>
-                                    <div>
-                                        Add to favourites
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
                         </div>
-                        <hr />
-                        <div className='flex-1 overflow-y-auto h-96 p-4'>
-                            Comments!
-                        </div>
-                        <div className='p-4'>
-                            <div className='flex gap-2 items-center'>
-                                <input type="text" value={text} onChange={changeEventHAndler} placeholder='Add a comment...' className='w-full outline-none border border-gray-300 p-2 rounded'/>
-                                <Button disabled={!text.trim()} onClick={sendMessageHandler} variant='outline'>Send</Button>
+
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <MoreHorizontal className="w-5 h-5 text-gray-600" />
+                        </Button>
+                    </div>
+
+                    {/* COMMENTS */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                        {post?.comments?.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                <p className="text-sm font-medium">No comments yet</p>
+                                <p className="text-xs">
+                                    Be the first one to share your thoughts!
+                                </p>
                             </div>
+                        ) : (
+                            post.comments.map((c, i) => {
+
+                                const timeAgo = formatTimeAgo(c.createdAt);
+
+                                return (
+                                    <div key={i} className="flex items-start gap-4">
+
+                                        <Avatar className="w-9 h-9 shrink-0 shadow-sm">
+                                            <AvatarImage src={c.author?.profilePicture} />
+                                            <AvatarFallback>U</AvatarFallback>
+                                        </Avatar>
+
+                                        <div className="flex flex-col flex-1">
+
+                                            <p className="text-sm leading-relaxed">
+                                                <span className="font-bold mr-2 text-black hover:underline cursor-pointer">
+                                                    {c.author?.username}
+                                                </span>
+
+                                                <span className="text-gray-700">
+                                                    {c.text}
+                                                </span>
+                                            </p>
+
+                                            <div className="flex gap-4 mt-2 text-[11px] text-gray-400 font-bold uppercase tracking-tight">
+
+                                                <span
+                                                    title={
+                                                        c.createdAt
+                                                            ? new Date(c.createdAt).toLocaleString()
+                                                            : ""
+                                                    }
+                                                    className="hover:text-gray-600 cursor-default"
+                                                >
+                                                    {timeAgo}
+                                                </span>
+
+                                                <span className="hover:text-black cursor-pointer transition-colors">
+                                                    Reply
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+
+                    </div>
+
+                    {/* INPUT */}
+                    <div className="p-4 border-t bg-gray-50/30">
+                        <div className="flex gap-3 items-center">
+
+                            <div className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-1.5 shadow-sm">
+                                <input
+                                    type="text"
+                                    value={text}
+                                    onChange={changeEventHandler}
+                                    placeholder="Write a comment..."
+                                    className="w-full outline-none text-sm py-2 bg-transparent text-gray-800"
+                                />
+                            </div>
+
+                            <Button
+                                disabled={!text.trim()}
+                                onClick={commentHandler}
+                                variant="ghost"
+                                className="text-blue-600 font-bold hover:bg-blue-50 hover:text-blue-700 transition-colors px-4"
+                            >
+                                Post
+                            </Button>
+
                         </div>
                     </div>
+
                 </div>
             </DialogContent>
         </Dialog>
-    )
-}
+    );
+};
 
-export default CommentDialog
+export default CommentDialog;

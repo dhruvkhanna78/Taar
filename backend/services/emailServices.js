@@ -18,6 +18,9 @@
 //   }
 // };
 
+
+//WORKING CODE FOR BREVO EMAIL SERVICE
+
 // import nodemailer from "nodemailer";
 
 // const transporter = nodemailer.createTransport({
@@ -42,6 +45,9 @@
 
 //   console.log("Email sent:", info.response);
 // }
+
+
+//WORKING CODE FOR BREVO EMAIL SERVICE USING API
 
 import axios from "axios";
 

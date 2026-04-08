@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { setPosts } from '@/redux/postSlice';
 
-const Post = ({ post }) => {
+const Post = ({ post, theme }) => {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef(null);
@@ -155,7 +155,9 @@ const Post = ({ post }) => {
   if (post.image) post.image.forEach(img => mediaItems.push({ type: 'image', url: img }));
 
   return (
-    <div className='select-none my-8 w-full max-w-sm mx-auto border-b border-gray-100 pb-4'>
+    <div
+      className={`select-none my-8 w-full max-w-sm mx-auto pb-4 rounded-xl transition`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -210,6 +212,11 @@ const Post = ({ post }) => {
       {/* Media Slider */}
       {mediaItems.length > 0 && (
         <div className="relative group">
+          {theme?.icon && (
+            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-md p-1 rounded-full shadow">
+              <theme.icon className={`w-4 h-4 ${theme.accent}`} />
+            </div>
+          )}
           <div
             ref={sliderRef}
             onScroll={handleScroll}
@@ -240,19 +247,53 @@ const Post = ({ post }) => {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Actions Section */}
       <div className='flex justify-between items-center mt-3'>
         <div className='flex items-center gap-4'>
           <div
             onClick={likeOrDislikeHandler}
             className={`cursor-pointer transition-transform active:scale-90 ${animateLike ? 'scale-125' : ''}`}
           >
-            {liked ? <FaHeart className='text-red-500' size={22} /> : <FaRegHeart size={22} />}
+            {liked ? (
+              // Agar like hai toh theme ka accent color use hoga (e.g., Purple for Entertainment)
+              <FaHeart className={`${theme?.accent || 'text-red-500'}`} size={22} />
+            ) : (
+              // Border waala heart bhi thoda theme ke hisaab se subtle dikh sakta hai
+              <FaRegHeart className="text-gray-600" size={22} />
+            )}
           </div>
-          <MessageCircle onClick={() => setOpened(true)} className='cursor-pointer' size={22} />
-          <Send className='cursor-pointer' size={22} />
+
+          {/* Message aur Send icon ko bhi theme touch de sakte hain */}
+          <MessageCircle
+            onClick={() => setOpened(true)}
+            className={`cursor-pointer text-gray-600`}
+            size={22}
+          />
+          <Send
+            className="cursor-pointer text-gray-600"
+            size={22}
+          />
         </div>
-        <Bookmark className='cursor-pointer' size={22} />
+        <Bookmark className="cursor-pointer text-gray-600" size={22} />
+      </div>
+
+      {/* Comment Input Section (Post Button color change) */}
+      <div className='flex items-center justify-between mt-2 border-t pt-2 border-gray-100/20'>
+        <input
+          type="text"
+          placeholder='Add a comment...'
+          value={text}
+          onChange={changeEventHAndler}
+          className='outline-none text-sm w-full bg-transparent placeholder:opacity-50'
+        />
+        {text.trim() && (
+          <button
+            onClick={commentHandler}
+            className={`font-semibold text-sm ml-2 ${theme?.accent || 'text-[#3BADF8]'}`}
+          >
+            Post
+          </button>
+        )}
       </div>
 
       {/* Post Info */}
@@ -269,7 +310,23 @@ const Post = ({ post }) => {
         )}
       </div>
 
-      <CommentDialog open={opened} setOpen={setOpened} post={post} />
+      <CommentDialog
+        open={opened}
+        setOpen={setOpened}
+        post={{ ...post, comments }}
+        commentHandler={commentHandler}
+        text={text}
+        setText={setText}
+      />
+
+      {comments.length > 0 && (
+        <div className="text-sm mt-1">
+          <span className="font-bold mr-2">
+            {comments[0].author?.username}
+          </span>
+          {comments[0].text}
+        </div>
+      )}
 
       {/* Comment Input */}
       <div className='flex items-center justify-between mt-2 border-t pt-2'>
