@@ -41,4 +41,4 @@ export const sendOTPEmail = async (email, otp) => {
   });
 
   console.log("Email sent:", info.response);
-};
+}
