@@ -21,8 +21,8 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.elasticemail.com",
-  port: 2525,
+  host: "smtp-relay.brevo.com",
+  port: 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
@@ -34,7 +34,7 @@ export const sendOTPEmail = async (email, otp) => {
   console.log("📨 Sending OTP to:", email);
 
   const info = await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from: `"Taar" <${process.env.BREVO_USER}>`,
     to: email,
     subject: "Your OTP",
     text: `Your OTP is ${otp}`,
