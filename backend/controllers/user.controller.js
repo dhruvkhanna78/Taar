@@ -72,7 +72,7 @@ export const login = async (req, res) => {
         message: "Something is missing, please check!",
         success: false,
       });
-    }
+    };
 
     let user = await User.findOne({ email });
     if (!user) {
