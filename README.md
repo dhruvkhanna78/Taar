@@ -10,6 +10,9 @@
 
 ## Overview
 
+### Link - 
+https://taar-szo1.onrender.com/
+
 Taar (meaning 'wire' or 'connection') aims to bridge the gap between users with a fast and intuitive interface. Built using the MERN stack, it handles everything from user authentication to complex social interactions like posting, liking, and following.
 
 ## Planned & Current Features
