@@ -7,6 +7,9 @@ export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: "https://taar-szo1.onrender.com",
+       // 👈 Aapka frontend URL exact hona chahiye
+        methods: ["GET", "POST"],
+        credentials: true
     },
   });
 
