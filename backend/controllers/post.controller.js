@@ -155,6 +155,7 @@ export const getAllPost = async (req, res) => {
 
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
+      .limit(10)
       .populate({ path: "author", select: "username profilePicture" }) // 'owner' ki jagah 'author'
       .populate({
         path: "comments",
