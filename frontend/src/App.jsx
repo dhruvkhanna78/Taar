@@ -13,6 +13,8 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SearchPage from './components/SearchPage.jsx'
 import CategoryPage from './components/CategoryPage.jsx'
 import Notification from './components/Notification.jsx'
+import Explore from './components/Explore.jsx'
+import Messages from './components/Messages.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -42,7 +44,15 @@ const browserRouter = createBrowserRouter([
       {
         path: 'notifications',
         element: <Notification />
-      }
+      },
+      {
+        path: 'explore',
+        element: <Explore />
+      },
+      {
+        path: 'chat',
+        element: <Messages />
+      },
       
     ]
   },
