@@ -3,7 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
-import Notification from "../models/notification.model.js";
+import { Notification } from "../models/notification.model.js";
 import { getIO, getReceiverSocket } from "../socket/socket.js";
 
 // export const addNewPost = async (req, res) => {
