@@ -37,7 +37,8 @@ const browserRouter = createBrowserRouter([
       {
         path: "/category/:type",
         element: <CategoryPage />
-      }
+      },
+      
     ]
   },
   {

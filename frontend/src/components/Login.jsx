@@ -60,15 +60,31 @@ const Login = () => {
   }
 
   return (
-    <div className='flex items-center w-screen min-h-screen justify-center bg-gray-50 px-4'>
+    <div className='flex items-center w-screen min-h-screen justify-center bg-gray-50 px-4 select-none'>
       <form 
         onSubmit={loginHandler} 
         className='shadow-xl flex flex-col gap-4 p-6 md:p-8 bg-white rounded-2xl w-full max-w-md border border-gray-100'
       >
-        <div className="my-2 flex flex-col items-center justify-center gap-2">
-          <h1 className='font-extrabold text-3xl tracking-tighter'>LOGO</h1>
-          <p className='text-gray-500 text-sm text-center'>Login to interact with people.</p>
-        </div>
+        <div className="my-2 flex flex-col items-center justify-center gap-1">
+  
+  {/* Logo (icon only feel) */}
+  <img
+    src="/taar-logo.png"
+    alt="TAAR logo"
+    className="w-20 h-20 object-contain"
+  />
+
+  {/* Brand name */}
+  <h1 className="text-2xl font-semibold tracking-widest text-gray-800 font-sans mt-[-13px]">
+    TAAR
+  </h1>
+
+  {/* Subtitle */}
+  <p className="text-gray-500 text-sm text-center">
+    Login to interact with people.
+  </p>
+
+</div>
 
         <div className="flex flex-col gap-1">
           <span className='text-sm font-semibold ml-1'>Email</span>
