@@ -25,7 +25,9 @@ const Profile = () => {
     user?._id?.toString() === userId?.toString();
 
   const isFollowing =
-    userProfile?.followers?.includes(user?._id) || false;
+  userProfile?.follower?.some(
+    id => id.toString() === user?._id?.toString()
+  ) || false;
 
   useEffect(() => {
     return () => {
@@ -66,42 +68,51 @@ const Profile = () => {
   };
 
   const handleFollow = async () => {
-    try {
-      const followers = userProfile.followers || [];
-      const following = user.following || [];
+  try {
+    const followers = userProfile.follower || [];
+    const following = user.following || [];
 
-      const updatedFollowers = isFollowing
-        ? followers.filter((id) => id !== user._id)
-        : [...followers, user._id];
+    const isAlreadyFollowing = followers.some(
+      (id) => id.toString() === user._id.toString()
+    );
 
-      const updatedFollowing = isFollowing
-        ? following.filter((id) => id !== userProfile._id)
-        : [...following, userProfile._id];
+    const updatedFollowers = isAlreadyFollowing
+      ? followers.filter(
+          (id) => id.toString() !== user._id.toString()
+        )
+      : [...followers, user._id];
 
-      dispatch(
-        setUserProfile({
-          ...userProfile,
-          followers: updatedFollowers,
-        })
-      );
+    const updatedFollowing = isAlreadyFollowing
+      ? following.filter(
+          (id) =>
+            id.toString() !== userProfile._id.toString()
+        )
+      : [...following, userProfile._id];
 
-      dispatch({
-        type: "auth/setAuthUser",
-        payload: {
-          ...user,
-          following: updatedFollowing,
-        },
-      });
+    dispatch(
+      setUserProfile({
+        ...userProfile,
+        follower: updatedFollowers,
+      })
+    );
 
-      await axios.post(
-        `https://taar-server.onrender.com/api/v1/user/followorunfollow/${userProfile._id}`,
-        {},
-        { withCredentials: true }
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
+    dispatch(
+      setAuthUser({
+        ...user,
+        following: updatedFollowing,
+      })
+    );
+
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/v1/user/followorunfollow/${userProfile._id}`,
+      {},
+      { withCredentials: true }
+    );
+  } catch (err) {
+    console.log(err);
+    toast.error("Follow update failed");
+  }
+};
 
   if (!userProfile) {
     return (
@@ -201,7 +212,7 @@ const Profile = () => {
 
                 <p>
                   <span className="font-bold">
-                    {userProfile.followers?.length || 0}
+                    {userProfile.follower?.length || 0}
                   </span>{" "}
                   followers
                 </p>
