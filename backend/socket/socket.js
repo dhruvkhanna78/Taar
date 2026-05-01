@@ -6,14 +6,14 @@ const onlineUsers = new Map();
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: "https://taar-szo1.onrender.com"
-    }
+      origin: "https://taar-szo1.onrender.com",
+    },
   });
 
   io.on("connection", (socket) => {
-
     socket.on("registerUser", (userId) => {
-      onlineUsers.set(userId, socket.id);
+      userSocketMap[userId] = socket.id;
+      console.log(`User ${userId} registered with socket ${socket.id}`);
     });
 
     socket.on("disconnect", () => {
@@ -23,7 +23,6 @@ export const initSocket = (server) => {
         }
       }
     });
-
   });
 };
 

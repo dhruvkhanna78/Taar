@@ -76,8 +76,8 @@ export const addNewPost = async (req, res) => {
     const authorId = req.id;
 
     // 1. Files access karna (Images aur Video)
-    const imageFiles = req.files['images'] || []; // Array of images
-    const videoFile = req.files['video'] ? req.files['video'][0] : null; // Single video
+    const imageFiles = req.files["images"] || []; // Array of images
+    const videoFile = req.files["video"] ? req.files["video"][0] : null; // Single video
 
     if (imageFiles.length === 0 && !videoFile) {
       return res.status(400).json({
@@ -124,7 +124,7 @@ export const addNewPost = async (req, res) => {
       category,
       tag,
       image: imageUrls, // Ab ye Array store karega
-      video: videoUrl,   // Video ke liye naya field (agar model mein hai)
+      video: videoUrl, // Video ke liye naya field (agar model mein hai)
       author: authorId,
     });
 
@@ -183,16 +183,16 @@ export const getAllPost = async (req, res) => {
 //     // Sabse simple query: {} matlab NO FILTER, poora collection fetch karo
 //     const posts = await Post.find({})
 //       .sort({ createdAt: -1 }) // Latest posts pehle
-//       .populate({ 
-//         path: "author", 
-//         select: "username profilePicture" 
+//       .populate({
+//         path: "author",
+//         select: "username profilePicture"
 //       })
 //       .populate({
 //         path: "comments",
 //         options: { sort: { createdAt: -1 } },
-//         populate: { 
-//           path: "author", 
-//           select: "username profilePicture" 
+//         populate: {
+//           path: "author",
+//           select: "username profilePicture"
 //         },
 //       });
 
@@ -270,7 +270,9 @@ export const likePost = async (req, res) => {
     });
 
     // realtime emit
+    console.log("Post Author ID:", post.author);
     const receiverSocket = getReceiverSocket(post.author);
+    console.log("Receiver Socket Found:", receiverSocket);
 
     if (receiverSocket) {
       getIO().to(receiverSocket).emit("notification", {
@@ -278,6 +280,9 @@ export const likePost = async (req, res) => {
         type: "like",
         postId,
       });
+      console.log("Event Emitted to:", receiverSocket);
+    } else{
+      console.log("No active socket found for author");
     }
 
     return res.status(200).json({
@@ -329,12 +334,12 @@ export const addComment = async (req, res) => {
       text,
       author: commentKarneWalaUserKiId,
       post: postId,
-    })
+    });
 
     await comment.populate({
       path: "author",
       select: "username profilePicture",
-    })
+    });
 
     post.comments.push(comment._id);
     await post.save();
@@ -354,7 +359,7 @@ export const getCommentsOfPost = async (req, res) => {
     const { postId } = req.params.id;
     const comments = await Comment.find({ post: postId }).populate(
       "author",
-      "username profilePicture"
+      "username profilePicture",
     );
 
     if (!comments)

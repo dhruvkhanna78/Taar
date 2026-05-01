@@ -16,12 +16,27 @@ const MainLayout = () => {
 
   // ✅ listen for notifications
   useEffect(() => {
-    socket.on("notification", (data) => {
-      console.log("New notification received:", data);
-    });
+  // Check connection status
+  socket.on("connect", () => {
+    console.log("✅ Socket Connected! ID:", socket.id);
+  });
 
-    return () => socket.off("notification");
-  }, []);
+  // Check if notification is received
+  socket.on("notification", (data) => {
+    console.log("🔔 New notification received:", data);
+  });
+
+  // Check for errors
+  socket.on("connect_error", (err) => {
+    console.log("❌ Connection Error:", err.message);
+  });
+
+  return () => {
+    socket.off("connect");
+    socket.off("notification");
+    socket.off("connect_error");
+  };
+}, []);
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen w-full overflow-x-hidden">
