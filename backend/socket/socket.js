@@ -1,0 +1,34 @@
+import { Server } from "socket.io";
+
+let io;
+const onlineUsers = new Map();
+
+export const initSocket = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173"
+    }
+  });
+
+  io.on("connection", (socket) => {
+
+    socket.on("registerUser", (userId) => {
+      onlineUsers.set(userId, socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      for (let [key, value] of onlineUsers.entries()) {
+        if (value === socket.id) {
+          onlineUsers.delete(key);
+        }
+      }
+    });
+
+  });
+};
+
+export const getIO = () => io;
+
+export const getReceiverSocket = (userId) => {
+  return onlineUsers.get(userId);
+};

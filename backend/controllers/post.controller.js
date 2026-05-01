@@ -3,6 +3,8 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
+import Notification from "../models/notificatio.model.js";
+import { getIO, getReceiverSocket } from "../socket/socket.js";
 
 // export const addNewPost = async (req, res) => {
 //   try {
@@ -247,11 +249,41 @@ export const likePost = async (req, res) => {
       });
     }
 
-    //like logic
-    await post.updateOne({ $addToSet: { likes: likeKarneWalaKiId } });
-    await post.save();
+    // duplicate like prevent karega
+    if (post.likes.includes(likeKarneWalaKiId)) {
+      return res.status(400).json({
+        message: "Already liked",
+        success: false,
+      });
+    }
 
-    return res.status(200).json({ message: "Post liked", success: true });
+    await post.updateOne({
+      $addToSet: { likes: likeKarneWalaKiId },
+    });
+
+    // notification DB entry
+    await Notification.create({
+      senderId: likeKarneWalaKiId,
+      receiverId: post.author,
+      type: "like",
+      postId: postId,
+    });
+
+    // realtime emit
+    const receiverSocket = getReceiverSocket(post.author);
+
+    if (receiverSocket) {
+      getIO().to(receiverSocket).emit("notification", {
+        senderId: likeKarneWalaKiId,
+        type: "like",
+        postId,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Post liked",
+      success: true,
+    });
   } catch (error) {
     console.log(error);
   }
