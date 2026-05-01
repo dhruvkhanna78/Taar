@@ -12,6 +12,7 @@ import EditProfile from './components/EditProfile.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import SearchPage from './components/SearchPage.jsx'
 import CategoryPage from './components/CategoryPage.jsx'
+import Notification from './components/Notification.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const browserRouter = createBrowserRouter([
         path: "/category/:type",
         element: <CategoryPage />
       },
+      {
+        path: 'notifications',
+        element: <Notification />
+      }
       
     ]
   },
@@ -52,7 +57,8 @@ const browserRouter = createBrowserRouter([
   {
     path: '/verify-otp',
     element: <VerificationPage />
-  }
+  },
+  
 ]);
 
 function App() {
