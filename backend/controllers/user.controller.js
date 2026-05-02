@@ -369,7 +369,7 @@ export const editProfile = async (req, res) => {
 
 export const getSuggestedUsers = async (req, res) => {
   try {
-    const SuggestedUsers = await User.find({ id: { $ne: req.id } }).select(
+    const SuggestedUsers = await User.find({ _id: { $ne: req.id } }).select(
       "-password",
     );
     if (!SuggestedUsers) {
