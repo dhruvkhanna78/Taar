@@ -150,24 +150,29 @@ export const addNewPost = async (req, res) => {
 
 export const getAllPost = async (req, res) => {
   try {
-    const category = req.query.category; // default
+    const category = req.query.category;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
     const filter = category
       ? { category: { $regex: new RegExp(`^${category}$`, "i") } }
       : {};
 
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
-      .limit(10)
-      .populate({ path: "author", select: "username profilePicture" }) // 'owner' ki jagah 'author'
+      .skip(skip)
+      .limit(limit)
+      .populate({ path: "author", select: "username profilePicture" })
       .populate({
         path: "comments",
-        options: { sort: { createdAt: -1 } }, // yeh populate ke andar sort ka sahi syntax hai
+        options: { sort: { createdAt: -1 } },
         populate: { path: "author", select: "username profilePicture" },
       });
 
     return res.status(200).json({
-      posts,
       success: true,
+      posts,
     });
   } catch (error) {
     console.error("Error in getAllPost:", error);

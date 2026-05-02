@@ -3,27 +3,27 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
-function useGetAllPost() {
+function useGetAllPost(page = 1) {
     const dispatch = useDispatch();
 
-    console.log("ENV CHECK:", import.meta.env);
-    console.log("API:", import.meta.env.VITE_API_URL);
-    // Hook implementation
     useEffect(() => {
-        // Fetch all posts logic here
         const fetchAllPost = async () => {
             try {
-                const res = await axios.get(`https://taar-server.onrender.com/api/v1/post/all`, { withCredentials: true });
+                const res = await axios.get(
+                    `https://taar-server.onrender.com/api/v1/post/all?page=${page}`,
+                    { withCredentials: true }
+                );
+
                 if (res.data.success) {
-                    console.log("Fetched posts:", res.data);
                     dispatch(setPosts(res.data.posts));
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.log("Error fetching posts:", error);
             }
         };
+
         fetchAllPost();
-    }, [dispatch]);
+    }, [dispatch, page]);
 }
+
 export default useGetAllPost;
