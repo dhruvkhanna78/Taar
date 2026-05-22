@@ -15,6 +15,7 @@ import CategoryPage from './components/CategoryPage.jsx'
 import Notification from './components/Notification.jsx'
 import Explore from './components/Explore.jsx'
 import Messages from './components/Messages.jsx'
+import Inbox from './components/Inbox.jsx'
 
 const browserRouter = createBrowserRouter([
   {
@@ -50,10 +51,13 @@ const browserRouter = createBrowserRouter([
         element: <Explore />
       },
       {
-        path: 'chat',
+        path: 'messages',
+        element: <Inbox />
+      },
+      {
+        path: 'chat/:id',
         element: <Messages />
       },
-      
     ]
   },
   {

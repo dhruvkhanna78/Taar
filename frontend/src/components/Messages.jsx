@@ -1,32 +1,120 @@
-import { Compass } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import socket from "../socket/socket.js";
 
-const Explore = () => {
-  const navigate = useNavigate();
+const Messages = () => {
+  const { id } = useParams();
+
+  const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
+
+  const scrollRef = useRef();
+
+  // fetch old messages
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(
+          `https://taar-server.onrender.com/api/v1/message/all/${id}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        setMessages(res.data.messages);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchMessages();
+  }, [id]);
+
+  // realtime receive
+  useEffect(() => {
+    socket.on("newMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      socket.off("newMessage");
+    };
+  }, []);
+
+  // auto scroll
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!text.trim()) return;
+
+    try {
+      const res = await axios.post(
+        `https://taar-server.onrender.com/api/v1/message/send/${id}`,
+        {
+          message: text,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      setMessages((prev) => [...prev, res.data.newMessage]);
+
+      setText("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center px-6">
+    <div className="flex flex-col h-screen bg-black text-white">
 
-      <Compass size={60} className="text-gray-400 mb-4" />
+      {/* top */}
+      <div className="p-4 border-b border-zinc-800 text-xl font-bold">
+        Chat
+      </div>
 
-      <h1 className="text-4xl font-bold">
-        Messages Coming Soon
-      </h1>
+      {/* messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
 
-      <p className="text-gray-500 mt-2 max-w-md">
-        Your inbox is being prepared. Direct messages will land here soon.
-      </p>
+        {messages.map((msg) => (
+          <div
+            key={msg._id}
+            className="bg-zinc-800 px-4 py-2 rounded-2xl w-fit max-w-[70%]"
+          >
+            {msg.message}
+          </div>
+        ))}
 
-      <Button
-        onClick={() => navigate(-1)}
-        className="mt-6 rounded-2xl px-6"
-      >
-        Go Back
-      </Button>
+        <div ref={scrollRef}></div>
+      </div>
 
+      {/* input */}
+      <div className="p-4 border-t border-zinc-800 flex gap-2">
+
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="flex-1 bg-zinc-900 px-4 py-2 rounded-xl outline-none"
+        />
+
+        <button
+          onClick={sendMessage}
+          className="bg-white text-black px-5 rounded-xl"
+        >
+          Send
+        </button>
+
+      </div>
     </div>
   );
 };
 
-export default Explore;
+export default Messages;

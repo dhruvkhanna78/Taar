@@ -69,7 +69,7 @@ const LeftSidebar = () => {
     { icon: <Home />, text: "Home", path: "/" },
     { icon: <Search />, text: "Search", path: "/search" },
     { icon: <TrendingUp />, text: "Explore", path: "/explore" },
-    { icon: <MessageCircle />, text: "Messages", path: "/chat" },
+    { icon: <MessageCircle />, text: "Messages", path: "/messages" },
     { icon: <Heart />, text: "Notifications", path: "/notifications" },
     { icon: <PlusSquare />, text: "Create" },
     { icon: <PackageOpen />, text: "Category" },
