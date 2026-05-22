@@ -480,3 +480,22 @@ export const searchUsers = async (req, res) => {
     });
   }
 };
+
+export const getAllUsers = async (req, res) => {
+  try {
+
+    const loggedInUserId = req.id;
+
+    const users = await User.find({
+      _id: { $ne: loggedInUserId }
+    }).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      users,
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+};

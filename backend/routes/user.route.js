@@ -2,6 +2,7 @@ import express from "express";
 import {
   editProfile,
   followOrUnfollow,
+  getAllUsers,
   getprofile,
   getSuggestedUsers,
   login,
@@ -25,5 +26,6 @@ router.route("/followorunfollow/:id").post(isAuthenticated, followOrUnfollow);
 router.route("/send-otp").post(resendOTP);
 router.route("/verify-otp").post(verifyOtp);
 router.route("/search").get(searchUsers)
+router.route("/all").get(isAuthenticated, getAllUsers)
 
 export default router;

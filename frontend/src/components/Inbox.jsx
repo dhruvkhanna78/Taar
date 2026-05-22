@@ -20,6 +20,7 @@ const Inbox = () => {
           }
         );
 
+        console.log(res.data);
         setUsers(res.data.users);
 
       } catch (error) {
