@@ -54,26 +54,39 @@ const Messages = () => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!text.trim()) return;
 
-    try {
-      const res = await axios.post(
-        `https://taar-server.onrender.com/api/v1/message/send/${id}`,
-        {
-          message: text,
-        },
-        {
-          withCredentials: true,
-        },
-      );
+  if (!text.trim()) return;
 
-      setMessages((prev) => [...prev, res.data.newMessage]);
+  const messageText = text;
 
-      setText("");
-    } catch (error) {
-      console.log(error);
-    }
+  const tempMessage = {
+    _id: Date.now(),
+    senderId: loggedInUser?._id,
+    receiverId: id,
+    message: messageText,
+    createdAt: new Date(),
   };
+
+  setMessages((prev) => [...prev, tempMessage]);
+
+  setText("");
+
+  try {
+
+    await axios.post(
+      `https://taar-server.onrender.com/api/v1/message/send/${id}`,
+      {
+        message: messageText,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   return (
     <div className="flex flex-col h-screen bg-[#0f0f10] text-white">
