@@ -28,26 +28,26 @@ const Notification = () => {
   }, []);
 
   return (
-    <div className="max-w-xl mx-auto p-4">
+    <div className="w-full max-w-4xl px-6 py-5">
 
-      <h2 className="text-xl font-bold mb-4">
+      <h2 className="text-3xl font-bold mb-6 tracking-tight">
         Notifications
       </h2>
 
       {notifications.length === 0 ? (
-        <p className="text-gray-400 text-center mt-10">
+        <p className="text-zinc-400 text-center mt-24 text-lg">
           No notifications yet
         </p>
       ) : (
         notifications.map((notif) => (
           <div
             key={notif._id}
-            className="flex items-center justify-between gap-4 py-3 border-b"
+            className="flex items-center justify-between gap-4 p-4 rounded-2xl hover:bg-zinc-100 transition-all duration-200"
           >
             {/* LEFT SIDE */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
 
-              <Avatar className="w-10 h-10">
+              <Avatar className="w-12 h-12">
                 <AvatarImage
                   src={notif.senderId?.profilePicture}
                 />
@@ -58,7 +58,7 @@ const Notification = () => {
                 </AvatarFallback>
               </Avatar>
 
-              <p className="text-sm">
+              <p className="text-sm text-zinc-700">
 
                 <span className="font-semibold">
                   {notif.senderId?.username}
@@ -83,7 +83,7 @@ const Notification = () => {
                       ? notif.postId.image[0]
                       : notif.postId.image
                   }
-                  className="w-12 h-12 object-cover rounded"
+                  className="w-14 h-14 object-cover rounded-xl"
                 />
               </Link>
             )}
