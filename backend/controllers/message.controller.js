@@ -67,3 +67,44 @@ export const getMessage = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getConversations = async (req, res) => {
+  try {
+
+    const userId = req.id;
+
+    const conversations = await Conversation.find({
+      participants: userId,
+    })
+      .populate("participants", "username profilePicture")
+      .populate({
+        path: "messages",
+        options: {
+          sort: { createdAt: -1 },
+          limit: 1,
+        },
+      })
+      .sort({ updatedAt: -1 });
+
+    const formattedConversations = conversations.map((conv) => {
+
+      const otherUser = conv.participants.find(
+        (p) => p._id.toString() !== userId.toString()
+      );
+
+      return {
+        _id: conv._id,
+        user: otherUser,
+        lastMessage: conv.messages[0]?.message || "",
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      conversations: formattedConversations,
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+};
