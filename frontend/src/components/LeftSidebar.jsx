@@ -90,6 +90,14 @@ const LeftSidebar = () => {
       {/* --- DESKTOP SIDEBAR (Restored & Minimal) --- */}
       <div className="hidden md:flex h-screen overflow-y-auto fixed flex-col gap-4 p-4 w-64 bg-white border-r border-gray-100">
        
+       <div
+  onClick={() => navigate("/")}
+  className="px-3 py-4 cursor-pointer"
+>
+  <h1 className="text-4xl font-black tracking-tight">
+    Taar
+  </h1>
+</div>
 
         <div className="flex flex-col gap-1">
           {sidebarItems.map((item, index) => (
