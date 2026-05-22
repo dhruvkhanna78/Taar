@@ -89,12 +89,7 @@ const LeftSidebar = () => {
     <>
       {/* --- DESKTOP SIDEBAR (Restored & Minimal) --- */}
       <div className="hidden md:flex h-screen overflow-y-auto fixed flex-col gap-4 p-4 w-64 bg-white border-r border-gray-100">
-        <h1 
-          className="my-4 pl-3 text-2xl font-black tracking-tighter text-black cursor-pointer" 
-          onClick={() => navigate("/")}
-        >
-          Taar
-        </h1>
+       
 
         <div className="flex flex-col gap-1">
           {sidebarItems.map((item, index) => (
@@ -136,6 +131,72 @@ const LeftSidebar = () => {
           ))}
         </div>
       </div>
+
+
+      {/* --- MOBILE HEADER --- */}
+<div className="md:hidden fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md z-40 px-5 py-4 flex items-center justify-between border-b border-gray-100">
+
+  <h1
+    className="text-2xl font-black tracking-tighter text-black"
+    onClick={() => navigate("/")}
+  >
+    Taar
+  </h1>
+
+  <div className="flex items-center gap-4">
+
+    <button
+      onClick={() => navigate("/notifications")}
+      className={`${
+        isActive("/notifications")
+          ? "text-black"
+          : "text-gray-600"
+      }`}
+    >
+      <Heart className="w-6 h-6" />
+    </button>
+
+    <button
+      onClick={() => navigate("/messages")}
+      className={`${
+        isActive("/messages")
+          ? "text-black"
+          : "text-gray-600"
+      }`}
+    >
+      <MessageCircle className="w-6 h-6" />
+    </button>
+
+  </div>
+
+</div>
+
+      {/* --- MOBILE TOP ACTIONS --- */}
+<div className="md:hidden fixed top-5 right-5 z-50 flex items-center gap-4">
+
+  <button
+    onClick={() => navigate("/notifications")}
+    className={`${
+      isActive("/notifications")
+        ? "text-black"
+        : "text-gray-600"
+    }`}
+  >
+    <Heart className="w-6 h-6" />
+  </button>
+
+  <button
+    onClick={() => navigate("/messages")}
+    className={`${
+      isActive("/messages")
+        ? "text-black"
+        : "text-gray-600"
+    }`}
+  >
+    <MessageCircle className="w-6 h-6" />
+  </button>
+
+</div>
 
       {/* --- MOBILE NAVBAR (No Logout, 5 Items) --- */}
       <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-lg border-t border-gray-100 flex justify-around items-center py-2 z-50 px-2 pb-6">
