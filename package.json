@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "date-fns": "^4.2.1",
     "react-daisyui": "^5.0.5"
   }
 }

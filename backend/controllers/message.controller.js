@@ -24,9 +24,10 @@ export const sendMessage = async (req, res) => {
       receiverId,
       message,
     });
+    await newMessage.save();
 
     if (newMessage) conversation.messages.push(newMessage._id);
-    await Promise.all([conversation.save(), newMessage.save()]);
+    await conversation.save();
     //implement socket.io for real time data transfer
     const receiverSocketId = getReceiverSocket(receiverId);
 
