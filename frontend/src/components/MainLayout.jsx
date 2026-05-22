@@ -43,7 +43,7 @@ const MainLayout = () => {
       {user && <LeftSidebar />}
 
       <div
-        className={`flex-1 w-full min-w-0 ${
+        className={`flex-1 w-full min-w-0 pt-20 ${
           user ? "md:ml-64 pb-24 md:pb-0" : ""
         }`}
       >
