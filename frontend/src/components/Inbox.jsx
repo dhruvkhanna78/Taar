@@ -102,27 +102,31 @@ const Inbox = () => {
       </div>
 
       <div className="space-y-3">
-        {conversations.map((conversation) => (
-          <div
-            key={conversation.user._id}
-            onClick={() => navigate(`/chat/${conversation.user._id}`)}
-            className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-100 cursor-pointer transition-all duration-200"
-          >
-            <img
-              src={conversation.user.profilePicture}
-              alt=""
-              className="w-12 h-12 rounded-full object-cover"
-            />
+        {conversations
+          .filter((conversation) => conversation?.user?._id)
+          .map((conversation) => (
+            <div
+              key={conversation.user._id}
+              onClick={() => navigate(`/chat/${conversation.user._id}`)}
+              className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-100 cursor-pointer transition-all duration-200"
+            >
+              <img
+                src={conversation.user.profilePicture || "/default-avatar.png"}
+                alt=""
+                className="w-12 h-12 rounded-full object-cover"
+              />
 
-            <div className="flex flex-col">
-              <h1 className="font-semibold">{conversation.user.username}</h1>
+              <div className="flex flex-col">
+                <h1 className="font-semibold">
+                  {conversation.user.username || "Unknown User"}
+                </h1>
 
-              <p className="text-sm text-zinc-500 truncate max-w-[300px]">
-                {conversation.lastMessage}
-              </p>
+                <p className="text-sm text-zinc-500 truncate max-w-[300px]">
+                  {conversation.lastMessage}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
